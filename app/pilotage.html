@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pilotage opérationnel - Floppy-MimIC</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="pilotage.js" defer></script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="index.html" aria-label="Accueil Floppy-MimIC">
+      <span class="brand-mark">MiM</span>
+      <span><strong>Floppy-MimIC</strong><small>Centre de cadrage IA</small></span>
+    </a>
+    <div class="flow-breadcrumb" aria-label="Fil d’Ariane">
+      <a href="projet.html">Refonte CRM On-Premise</a><span aria-hidden="true">/</span><strong>Pilotage</strong>
+    </div>
+    <div class="user-pill">Chef de Projet</div>
+  </header>
+
+  <div class="shell">
+    <nav class="sidebar" aria-label="Navigation principale">
+      <div class="nav-group">
+        <p class="nav-title">Espace projet</p>
+        <a class="nav-link" href="index.html"><span class="nav-icon">P</span>Projets</a>
+        <a class="nav-link" href="projet.html"><span class="nav-icon">F</span>Fiche projet</a>
+        <a class="nav-link" href="sources.html"><span class="nav-icon">S</span>Sources</a>
+        <a class="nav-link" href="contexte.html"><span class="nav-icon">C</span>Contexte</a>
+        <a class="nav-link" href="workflow.html"><span class="nav-icon">↗</span>Flux</a>
+        <a class="nav-link active" aria-current="page" href="pilotage.html"><span class="nav-icon">◫</span>Pilotage</a>
+        <a class="nav-link" href="agents.html"><span class="nav-icon">◎</span>Équipe IA</a>
+        <a class="nav-link" href="generations.html"><span class="nav-icon">G</span>Générations</a>
+      </div>
+      <div class="nav-group">
+        <p class="nav-title">Gouvernance</p>
+        <a class="nav-link" href="revue.html"><span class="nav-icon">R</span>Revue</a>
+        <a class="nav-link" href="versions.html"><span class="nav-icon">V</span>Versions</a>
+        <a class="nav-link" href="publications.html"><span class="nav-icon">E</span>Exports</a>
+        <a class="nav-link" href="audit.html"><span class="nav-icon">A</span>Audit</a>
+        <a class="nav-link" href="admin.html"><span class="nav-icon">M</span>Membres</a>
+      </div>
+    </nav>
+
+    <main class="content pilot-content">
+      <div class="page-head">
+        <div>
+          <span class="eyebrow">Refonte CRM On-Premise · Vue projet</span>
+          <h1>Pilotage opérationnel</h1>
+          <p>Traitements, décisions humaines et consommation IA dans un même parcours.</p>
+        </div>
+        <div class="toolbar">
+          <a class="button secondary" href="workflow.html">Voir le flux</a>
+          <a class="button secondary" href="agents.html">Équipe IA</a>
+          <a class="button secondary" href="audit.html">Voir l’audit</a>
+        </div>
+      </div>
+
+      <div class="notice pilot-notice" role="note">
+        <strong>Données de démonstration.</strong> Les cartes et les montants illustrent l’IHM cible. Les décisions se prennent dans les écrans métier et sont contrôlées par l’API.
+      </div>
+
+      <section class="kpi-grid pilot-kpis" aria-label="Synthèse de l’activité">
+        <button class="kpi pilot-kpi" type="button" data-quick-status="running"><span>En cours</span><strong>2</strong><small>Analyse et génération</small></button>
+        <button class="kpi pilot-kpi" type="button" data-quick-status="human"><span>Décisions attendues</span><strong>2</strong><small>Product Owner</small></button>
+        <button class="kpi pilot-kpi" type="button" data-quick-status="failed"><span>Échecs</span><strong>1</strong><small>Tentative consultable</small></button>
+        <a class="kpi" href="#consommation"><span>Coût LLM estimé</span><strong>2,84 €</strong><small>Tarif daté · métriques partielles</small></a>
+      </section>
+
+      <section class="surface pilot-board-surface" aria-labelledby="board-title">
+        <div class="surface-header pilot-header">
+          <div><h2 id="board-title">Activité du projet</h2><p>Chaque carte renvoie à un objet existant et à son historique.</p></div>
+          <div class="button-row" role="group" aria-label="Mode d’affichage">
+            <button id="view-board" class="button secondary" type="button" aria-pressed="true">Colonnes</button>
+            <button id="view-list" class="button secondary" type="button" aria-pressed="false">Liste</button>
+          </div>
+        </div>
+        <div class="pilot-filters" role="group" aria-label="Filtres de l’activité">
+          <div class="field"><label for="pilot-search">Rechercher</label><input id="pilot-search" type="search" placeholder="Titre, identifiant, responsable"></div>
+          <div class="field"><label for="pilot-type">Type</label><select id="pilot-type"><option value="all">Tous</option><option value="source">Source</option><option value="generation">Génération</option><option value="flow">Flux</option><option value="review">Revue</option></select></div>
+          <div class="field"><label for="pilot-status">État</label><select id="pilot-status"><option value="all">Tous</option><option value="queued">En attente</option><option value="running">En cours</option><option value="human">Décision humaine</option><option value="done">Terminé</option><option value="failed">Échec</option></select></div>
+          <div class="field"><label for="pilot-owner">Responsable</label><select id="pilot-owner"><option value="all">Tous</option><option value="product-owner">Product Owner</option><option value="chef-projet">Chef de Projet</option><option value="architecte">Architecte Applicatif</option><option value="systeme">Système</option></select></div>
+          <button id="clear-filters" class="button ghost" type="button">Effacer</button>
+        </div>
+        <p id="pilot-result-count" class="pilot-result" role="status" aria-live="polite"></p>
+
+        <div class="pilot-board" id="pilot-board" aria-label="Activité par état">
+          <section class="pilot-column" data-column="queued" aria-labelledby="col-queued"><h3 id="col-queued"><span class="pilot-dot queued"></span>En attente <span class="pilot-count">0</span></h3><div class="pilot-card-list">
+            <button class="pilot-card" type="button" data-detail="detail-source" data-status="queued" data-type="source" data-owner="systeme" aria-controls="pilot-detail"><span class="pilot-card-top"><span class="tag">Source · SRC-18</span><span class="status running">En attente</span></span><strong>Extraction du cahier des charges v2</strong><small>Import vérifié · démarrage worker attendu</small><span class="pilot-card-foot">Système <span>09:42</span></span></button>
+          </div></section>
+          <section class="pilot-column" data-column="running" aria-labelledby="col-running"><h3 id="col-running"><span class="pilot-dot running"></span>En cours <span class="pilot-count">0</span></h3><div class="pilot-card-list">
+            <button class="pilot-card" type="button" data-detail="detail-analysis" data-status="running" data-type="source" data-owner="systeme" aria-controls="pilot-detail"><span class="pilot-card-top"><span class="tag">Analyse · ANA-07</span><span class="status running">En cours</span></span><strong>Structuration des exigences CRM</strong><small>Flux v3 · nœud analyse IA</small><span class="pilot-card-foot">Système <span>09:38</span></span></button>
+            <button class="pilot-card" type="button" data-detail="detail-generation" data-status="running" data-type="generation" data-owner="chef-projet" aria-controls="pilot-detail"><span class="pilot-card-top"><span class="tag">Génération · GEN-23</span><span class="status ai">Brouillon IA</span></span><strong>Plan projet et risques v2</strong><small>Version créée après traitement · jamais validée par défaut</small><span class="pilot-card-foot">Chef de Projet <span>09:31</span></span></button>
+          </div></section>
+          <section class="pilot-column" data-column="human" aria-labelledby="col-human"><h3 id="col-human"><span class="pilot-dot human"></span>Décision humaine <span class="pilot-count">0</span></h3><div class="pilot-card-list">
+            <button class="pilot-card" type="button" data-detail="detail-review" data-status="human" data-type="review" data-owner="product-owner" aria-controls="pilot-detail"><span class="pilot-card-top"><span class="tag">Revue · REV-12</span><span class="status review">À revoir</span></span><strong>User stories CRM v3</strong><small>Validation Product Owner attendue</small><span class="pilot-card-foot">Product Owner <span>Hier</span></span></button>
+            <button class="pilot-card" type="button" data-detail="detail-gate" data-status="human" data-type="flow" data-owner="product-owner" aria-controls="pilot-detail"><span class="pilot-card-top"><span class="tag">Flux · RUN-41</span><span class="status review">À revoir</span></span><strong>Besoin CRM à confirmer</strong><small>Porte humaine du flux v3 · Product Owner</small><span class="pilot-card-foot">Product Owner <span>Hier</span></span></button>
+          </div></section>
+          <section class="pilot-column" data-column="done" aria-labelledby="col-done"><h3 id="col-done"><span class="pilot-dot done"></span>Terminé <span class="pilot-count">0</span></h3><div class="pilot-card-list">
+            <button class="pilot-card" type="button" data-detail="detail-done" data-status="done" data-type="generation" data-owner="architecte" aria-controls="pilot-detail"><span class="pilot-card-top"><span class="tag">Génération · GEN-21</span><span class="status ai">Brouillon IA</span></span><strong>Modèle de données v1</strong><small>Traitement fini · revue documentaire à ouvrir</small><span class="pilot-card-foot">Architecte Applicatif <span>Hier</span></span></button>
+          </div></section>
+          <section class="pilot-column" data-column="failed" aria-labelledby="col-failed"><h3 id="col-failed"><span class="pilot-dot failed"></span>Échec <span class="pilot-count">0</span></h3><div class="pilot-card-list">
+            <button class="pilot-card" type="button" data-detail="detail-error" data-status="failed" data-type="flow" data-owner="chef-projet" aria-controls="pilot-detail"><span class="pilot-card-top"><span class="tag">Flux · RUN-39</span><span class="status error">Échec</span></span><strong>Diff des livrables</strong><small>Tentative 2 · délai dépassé</small><span class="pilot-card-foot">Chef de Projet <span>Hier</span></span></button>
+          </div></section>
+        </div>
+        <p id="pilot-empty" class="pilot-empty" hidden>Aucune activité ne correspond aux filtres. <button id="clear-empty" class="button ghost" type="button">Effacer les filtres</button></p>
+      </section>
+
+      <div class="pilot-lower">
+        <section class="surface pilot-detail" id="pilot-detail" aria-labelledby="detail-title" tabindex="-1">
+          <div class="surface-header"><div><span class="eyebrow">Objet sélectionné</span><h2 id="detail-title">Détail de l’activité</h2></div><span class="tag">Lecture seule</span></div>
+          <div id="pilot-detail-body" class="surface-body"><p>Sélectionnez une carte pour consulter sa provenance, sa chronologie et ses liens métier.</p></div>
+        </section>
+        <section class="surface" id="consommation" aria-labelledby="cost-title">
+          <div class="surface-header"><div><span class="eyebrow">Gouvernance LLM</span><h2 id="cost-title">Consommation estimée</h2><p>Période : 30 derniers jours · données fictives.</p></div></div>
+          <div class="surface-body">
+            <div class="pilot-cost-total"><strong>2,84 €</strong><span>estimation partielle</span></div>
+            <div class="pilot-meter" role="img" aria-label="Modèle A : 72 pour cent ; modèle B : 28 pour cent"><span style="width:72%"></span></div>
+            <div class="table-wrap"><table><thead><tr><th>Modèle</th><th>Entrée</th><th>Sortie</th><th>Coût estimé</th></tr></thead><tbody><tr><td>Modèle A</td><td>182 400</td><td>43 100</td><td>2,04 €</td></tr><tr><td>Modèle B</td><td>74 200</td><td>18 900</td><td>0,80 €</td></tr><tr><td>GEN-23</td><td>Non disponible</td><td>Non disponible</td><td>Non disponible</td></tr></tbody></table></div>
+            <p class="helper">Estimation en EUR · catalogue tarifaire interne du 01/09/2026. GEN-23 est en cours et ses métriques ne sont pas encore disponibles ; le total est incomplet.</p>
+          </div>
+        </section>
+      </div>
+      <p class="footer-note">Prototype local : filtres et détail simulés, sans connexion serveur ni changement de statut métier. Référence : <a href="../001-global-ihm.md">spécification IHM</a>.</p>
+    </main>
+  </div>
+
+  <template id="detail-source"><p class="pilot-detail-lead">SRC-18 · document source · en attente de worker</p><dl class="pilot-facts"><div><dt>Source</dt><dd>CDC_CRM_v2.pdf</dd></div><div><dt>Responsable</dt><dd>Système</dd></div><div><dt>Statut documentaire</dt><dd>Sans objet</dd></div><div><dt>Dépendance</dt><dd>Contrôle de type et taille terminé</dd></div></dl><ol class="pilot-timeline"><li><time>09:42</time><span>Fichier accepté et empreinte enregistrée.</span></li><li><time>09:42</time><span>Extraction placée en file d’attente.</span></li></ol><a class="button secondary" href="sources.html#detail-source">Ouvrir la source</a></template>
+  <template id="detail-analysis"><p class="pilot-detail-lead">ANA-07 · analyse IA · nœud du flux v3</p><dl class="pilot-facts"><div><dt>Entrée</dt><dd>Cahier des charges v2</dd></div><div><dt>Sortie prévue</dt><dd>Propositions de contexte en Brouillon IA</dd></div><div><dt>Responsable</dt><dd>Système · revue Product Owner ensuite</dd></div><div><dt>Tentative</dt><dd>1 · en cours</dd></div></dl><ol class="pilot-timeline"><li><time>09:38</time><span>Analyse démarrée.</span></li><li><time>09:39</time><span>Extraction transmise à l’adaptateur LLM.</span></li></ol><div class="button-row"><a class="button secondary" href="sources.html">Voir la source</a><a class="button secondary" href="workflow.html">Voir le flux</a></div></template>
+  <template id="detail-generation"><p class="pilot-detail-lead">GEN-23 · génération documentaire · plan projet v2</p><dl class="pilot-facts"><div><dt>Contexte</dt><dd>Snapshot projet du 27/09/2026</dd></div><div><dt>Version</dt><dd>v2 en création</dd></div><div><dt>Statut documentaire</dt><dd>Brouillon IA après génération</dd></div><div><dt>Modèle</dt><dd>Modèle A · paramètres non secrets</dd></div></dl><ol class="pilot-timeline"><li><time>09:31</time><span>Demande créée par le Chef de Projet.</span></li><li><time>09:32</time><span>Génération démarrée.</span></li></ol><a class="button secondary" href="generations.html">Ouvrir la génération</a></template>
+  <template id="detail-review"><p class="pilot-detail-lead">REV-12 · user stories CRM v3 · décision attendue</p><dl class="pilot-facts"><div><dt>Statut documentaire</dt><dd>À revoir</dd></div><div><dt>Décideur</dt><dd>Product Owner</dd></div><div><dt>Commentaires</dt><dd>5 ouverts</dd></div><div><dt>Source</dt><dd>Contexte validé v4</dd></div></dl><ol class="pilot-timeline"><li><time>Hier 16:02</time><span>Version v3 soumise à revue.</span></li><li><time>Hier 16:16</time><span>Commentaire ajouté.</span></li></ol><a class="button" href="revue.html">Ouvrir la revue</a></template>
+  <template id="detail-gate"><p class="pilot-detail-lead">RUN-41 · flux v3 · porte Human-in-the-Loop</p><dl class="pilot-facts"><div><dt>État du run</dt><dd>waiting_human</dd></div><div><dt>Décideur</dt><dd>Product Owner</dd></div><div><dt>Artefact</dt><dd>Besoin CRM · À revoir</dd></div><div><dt>Dépendance</dt><dd>Génération documentaire suspendue</dd></div></dl><ol class="pilot-timeline"><li><time>Hier 14:11</time><span>Analyse IA terminée ; proposition créée.</span></li><li><time>Hier 14:12</time><span>Porte humaine atteinte ; exécution suspendue.</span></li></ol><div class="button-row"><a class="button" href="contexte.html">Examiner le besoin</a><a class="button secondary" href="workflow.html">Voir le flux</a></div></template>
+  <template id="detail-done"><p class="pilot-detail-lead">GEN-21 · traitement terminé · validation documentaire distincte</p><dl class="pilot-facts"><div><dt>Version</dt><dd>Modèle de données v1</dd></div><div><dt>Statut documentaire</dt><dd>Brouillon IA</dd></div><div><dt>Décideur</dt><dd>Architecte Applicatif</dd></div><div><dt>Publication</dt><dd>Interdite avant validation humaine</dd></div></dl><ol class="pilot-timeline"><li><time>Hier 11:22</time><span>Génération terminée ; version créée.</span></li><li><time>Hier 11:23</time><span>Version prête pour soumission en revue.</span></li></ol><a class="button secondary" href="versions.html">Voir les versions</a></template>
+  <template id="detail-error"><p class="pilot-detail-lead">RUN-39 · diff des livrables · tentative 2 en échec</p><dl class="pilot-facts"><div><dt>Erreur</dt><dd>Délai de calcul dépassé, code TIMEOUT_DIFF</dd></div><div><dt>Tentatives</dt><dd>1 puis 2 ; historique conservé</dd></div><div><dt>Dernier état</dt><dd>failed</dd></div><div><dt>Action</dt><dd>Retry possible après contrôle serveur des droits</dd></div></dl><ol class="pilot-timeline"><li><time>Hier 10:08</time><span>Tentative 1 en échec : délai dépassé.</span></li><li><time>Hier 10:15</time><span>Tentative 2 créée et échouée ; identifiant conservé.</span></li></ol><div class="button-row"><a class="button secondary" href="workflow.html">Inspecter le flux</a><a class="button secondary" href="audit.html">Voir l’audit</a></div><p class="helper">La relance sera proposée dans l’application après vérification RBAC ; ce prototype ne modifie pas le run.</p></template>
+</body>
+</html>

@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Revue livrable - Floppy-MimIC</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="index.html" aria-label="Accueil Floppy-MimIC">
+      <span class="brand-mark">MiM</span>
+      <span><strong>Floppy-MimIC</strong><small>Centre de cadrage IA</small></span>
+    </a>
+    <form class="search" action="revue.html">
+      <label class="sr-only" for="global-search">Recherche livrable</label>
+      <input id="global-search" type="search" placeholder="Rechercher dans le livrable, commentaires ou métadonnées">
+    </form>
+    <div class="user-pill">Architecte Applicatif</div>
+  </header>
+
+  <div class="shell">
+    <nav class="sidebar" aria-label="Navigation principale">
+      <div class="nav-group">
+        <p class="nav-title">Espace projet</p>
+        <a class="nav-link" href="index.html"><span class="nav-icon">P</span>Projets</a>
+        <a class="nav-link" href="projet.html"><span class="nav-icon">F</span>Fiche projet</a>
+        <a class="nav-link" href="sources.html"><span class="nav-icon">S</span>Sources</a>
+        <a class="nav-link" href="contexte.html"><span class="nav-icon">C</span>Contexte</a>
+        <a class="nav-link" href="workflow.html"><span class="nav-icon">↗</span>Flux</a>
+        <a class="nav-link" href="pilotage.html"><span class="nav-icon">◫</span>Pilotage</a>
+        <a class="nav-link" href="agents.html"><span class="nav-icon">◎</span>Équipe IA</a>
+        <a class="nav-link" href="generations.html"><span class="nav-icon">G</span>Générations</a>
+      </div>
+      <div class="nav-group">
+        <p class="nav-title">Gouvernance</p>
+        <a class="nav-link active" aria-current="page" href="revue.html"><span class="nav-icon">R</span>Revue</a>
+        <a class="nav-link" href="versions.html"><span class="nav-icon">V</span>Versions</a>
+        <a class="nav-link" href="publications.html"><span class="nav-icon">E</span>Exports</a>
+        <a class="nav-link" href="audit.html"><span class="nav-icon">A</span>Audit</a>
+        <a class="nav-link" href="admin.html"><span class="nav-icon">M</span>Membres</a>
+      </div>
+    </nav>
+
+    <main class="content">
+      <div class="page-head">
+        <div>
+          <h1>User stories CRM v3</h1>
+          <p>Version générée le 12 juin 2026, issue de la régénération v2.</p>
+        </div>
+        <div class="toolbar">
+          <span class="status review">À revoir</span>
+          <a class="button secondary" href="pilotage.html">Décisions du projet</a>
+          <a class="button secondary" href="versions.html">Comparer</a>
+          <a class="button" href="#decision">Décision</a>
+        </div>
+      </div>
+
+      <nav class="tabs" aria-label="Onglets projet">
+        <a class="tab" href="projet.html">Vue d'ensemble</a>
+        <a class="tab" href="sources.html">Sources</a>
+        <a class="tab" href="contexte.html">Contexte</a>
+        <a class="tab" href="workflow.html">Flux</a>
+        <a class="tab" href="pilotage.html">Pilotage</a>
+        <a class="tab" href="agents.html">Équipe IA</a>
+        <a class="tab" href="generations.html">Générations</a>
+        <a class="tab active" aria-current="page" href="revue.html">Revue</a>
+        <a class="tab" href="versions.html">Versions</a>
+        <a class="tab" href="audit.html">Audit</a>
+      </nav>
+
+      <section class="surface" aria-labelledby="workflow-title">
+        <div class="surface-header">
+          <div>
+            <h2 id="workflow-title">Workflow version</h2>
+            <p>Transitions contrôlées par rôle et auditées.</p>
+          </div>
+          <div class="button-row">
+            <a class="button secondary" href="#commentaires">Commenter</a>
+            <a class="button warning" href="generations.html#regenerer">Régénérer</a>
+          </div>
+        </div>
+        <div class="surface-body">
+          <div class="workflow">
+            <span class="step done">Brouillon IA</span>
+            <span class="step active">À revoir</span>
+            <span class="step">Validé</span>
+            <span class="step">Publié</span>
+            <span class="step blocked">Rejet possible</span>
+            <span class="step">Obsolète</span>
+          </div>
+        </div>
+      </section>
+
+      <div class="layout-main-aside">
+        <section class="surface" aria-labelledby="preview-title">
+          <div class="surface-header">
+            <div>
+              <h2 id="preview-title">Prévisualisation</h2>
+              <p>Contenu éditable en cible selon permissions.</p>
+            </div>
+            <div class="button-row">
+              <a class="button secondary" href="#edition">Mode édition</a>
+              <a class="button secondary" href="publications.html">Exporter</a>
+            </div>
+          </div>
+          <div class="surface-body">
+            <article class="document-preview" id="edition">
+              <h2>User stories - Refonte CRM</h2>
+              <h3>US-001 - Créer une fiche client</h3>
+              <p>En tant que conseiller, je veux créer une fiche client structurée afin de centraliser les informations nécessaires au suivi commercial.</p>
+              <ul>
+                <li>Les champs obligatoires sont contrôlés avant sauvegarde.</li>
+                <li>La création écrit un événement d'audit.</li>
+                <li>Les données sensibles ne sont visibles qu'aux rôles autorisés.</li>
+              </ul>
+              <h3>US-002 - Qualifier une opportunité</h3>
+              <p>En tant que Product Owner, je veux relier une opportunité aux exigences validées afin de garder la traçabilité du cadrage.</p>
+              <h3>Points de vigilance</h3>
+              <p>La génération inclut 12 éléments à revoir ; ils doivent être confirmés avant publication.</p>
+            </article>
+          </div>
+        </section>
+
+        <aside class="surface" id="commentaires" aria-labelledby="commentaires-title">
+          <div class="surface-header">
+            <div>
+              <h2 id="commentaires-title">Commentaires</h2>
+              <p>Fil de revue attaché à la version.</p>
+            </div>
+            <span class="status review">5 ouverts</span>
+          </div>
+          <div class="surface-body">
+            <ul class="comment-list">
+              <li>
+                <div class="record-title">
+                  <span>Critère d'acceptation incomplet</span>
+                  <span class="status review">Ouvert</span>
+                </div>
+                <div class="meta">Product Owner, 12 juin 2026 14:10</div>
+              </li>
+              <li>
+                <div class="record-title">
+                  <span>Risque sécurité à relier</span>
+                  <span class="status review">Ouvert</span>
+                </div>
+                <div class="meta">Architecte Applicatif, 12 juin 2026 14:35</div>
+              </li>
+              <li>
+                <div class="record-title">
+                  <span>Formulation corrigée</span>
+                  <span class="status done">Résolu</span>
+                </div>
+                <div class="meta">Chef de Projet, 12 juin 2026 15:02</div>
+              </li>
+            </ul>
+            <form action="revue.html">
+              <div class="field">
+                <label for="nouveau-commentaire">Nouveau commentaire</label>
+                <textarea id="nouveau-commentaire"></textarea>
+              </div>
+              <div class="button-row">
+                <button type="submit">Ajouter</button>
+                <a class="button secondary" href="#resolution">Résoudre</a>
+              </div>
+            </form>
+          </div>
+        </aside>
+      </div>
+
+      <div class="layout-even">
+        <section class="surface" aria-labelledby="metadata-title">
+          <div class="surface-header">
+            <h2 id="metadata-title">Métadonnées LLM</h2>
+          </div>
+          <div class="surface-body">
+            <ul class="definition-list">
+              <li><strong>Modèle</strong><div class="meta">gpt-x via adaptateur gouverné</div></li>
+              <li><strong>Paramètres</strong><div class="meta mono">temperature=0.2, max_tokens=8000</div></li>
+              <li><strong>Contexte source</strong><div class="meta">126 éléments, dont 12 à revoir</div></li>
+              <li><strong>Prompt</strong><div class="meta">Masqué partiellement selon rôle et politique sécurité.</div></li>
+            </ul>
+          </div>
+        </section>
+
+        <section class="surface" id="decision" aria-labelledby="decision-title">
+          <div class="surface-header">
+            <h2 id="decision-title">Décision humaine</h2>
+          </div>
+          <form class="surface-body" action="audit.html">
+            <div class="field">
+              <label for="decision-action">Transition</label>
+              <select id="decision-action">
+                <option>Valider</option>
+                <option>Rejeter</option>
+                <option>Maintenir à revoir</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="motif-decision">Motif</label>
+              <textarea id="motif-decision">Motif obligatoire pour un rejet, recommandé pour toute validation structurante.</textarea>
+            </div>
+            <div class="button-row" id="resolution">
+              <button type="submit">Confirmer</button>
+              <a class="button danger" href="generations.html#regenerer">Rejeter et régénérer</a>
+              <span class="button disabled" aria-disabled="true">Publier</span>
+            </div>
+          </form>
+        </section>
+      </div>
+    </main>
+  </div>
+</body>
+</html>

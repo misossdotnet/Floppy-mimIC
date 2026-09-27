@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Fiche projet - Floppy-MimIC</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="index.html" aria-label="Accueil Floppy-MimIC">
+      <span class="brand-mark">MiM</span>
+      <span><strong>Floppy-MimIC</strong><small>Centre de cadrage IA</small></span>
+    </a>
+    <form class="search" action="index.html">
+      <label class="sr-only" for="global-search">Recherche globale</label>
+      <input id="global-search" type="search" placeholder="Rechercher un projet, un livrable ou un audit">
+    </form>
+    <div class="user-pill">Architecte Applicatif</div>
+  </header>
+
+  <div class="shell">
+    <nav class="sidebar" aria-label="Navigation principale">
+      <div class="nav-group">
+        <p class="nav-title">Espace projet</p>
+        <a class="nav-link" href="index.html"><span class="nav-icon">P</span>Projets</a>
+        <a class="nav-link active" aria-current="page" href="projet.html"><span class="nav-icon">F</span>Fiche projet</a>
+        <a class="nav-link" href="sources.html"><span class="nav-icon">S</span>Sources</a>
+        <a class="nav-link" href="contexte.html"><span class="nav-icon">C</span>Contexte</a>
+        <a class="nav-link" href="workflow.html"><span class="nav-icon">↗</span>Flux</a>
+        <a class="nav-link" href="pilotage.html"><span class="nav-icon">◫</span>Pilotage</a>
+        <a class="nav-link" href="agents.html"><span class="nav-icon">◎</span>Équipe IA</a>
+        <a class="nav-link" href="generations.html"><span class="nav-icon">G</span>Générations</a>
+      </div>
+      <div class="nav-group">
+        <p class="nav-title">Gouvernance</p>
+        <a class="nav-link" href="revue.html"><span class="nav-icon">R</span>Revue</a>
+        <a class="nav-link" href="versions.html"><span class="nav-icon">V</span>Versions</a>
+        <a class="nav-link" href="publications.html"><span class="nav-icon">E</span>Exports</a>
+        <a class="nav-link" href="audit.html"><span class="nav-icon">A</span>Audit</a>
+        <a class="nav-link" href="admin.html"><span class="nav-icon">M</span>Membres</a>
+      </div>
+    </nav>
+
+    <main class="content">
+      <div class="page-head">
+        <div>
+          <h1>Refonte CRM On-Premise</h1>
+          <p>Projet en validation, dernière activité : génération user stories v3.</p>
+        </div>
+        <div class="toolbar">
+          <span class="status review">À revoir</span>
+          <a class="button secondary" href="#edition-projet">Modifier</a>
+          <a class="button warning" href="#confirmation-archivage">Archiver</a>
+        </div>
+      </div>
+
+      <nav class="tabs" aria-label="Onglets projet">
+        <a class="tab active" aria-current="page" href="projet.html">Vue d'ensemble</a>
+        <a class="tab" href="sources.html">Sources</a>
+        <a class="tab" href="contexte.html">Contexte</a>
+        <a class="tab" href="workflow.html">Flux</a>
+        <a class="tab" href="pilotage.html">Pilotage</a>
+        <a class="tab" href="agents.html">Équipe IA</a>
+        <a class="tab" href="generations.html">Générations</a>
+        <a class="tab" href="revue.html">Revue</a>
+        <a class="tab" href="versions.html">Versions</a>
+        <a class="tab" href="audit.html">Audit</a>
+        <a class="tab" href="admin.html">Membres</a>
+      </nav>
+
+      <section class="kpi-grid" aria-label="Synthèse projet">
+        <a class="kpi" href="sources.html">
+          <span>Sources importées</span>
+          <strong>7</strong>
+          <small>1 analyse en cours</small>
+        </a>
+        <a class="kpi" href="contexte.html">
+          <span>Contexte structuré</span>
+          <strong>126</strong>
+          <small>31 brouillons IA</small>
+        </a>
+        <a class="kpi" href="pilotage.html">
+          <span>Décisions attendues</span>
+          <strong>2</strong>
+          <small>Revues et portes humaines</small>
+        </a>
+        <a class="kpi" href="versions.html">
+          <span>Versions générées</span>
+          <strong>18</strong>
+          <small>2 publiées</small>
+        </a>
+      </section>
+
+      <section class="surface" aria-labelledby="cycle-hitl">
+        <div class="surface-header">
+          <div>
+            <h2 id="cycle-hitl">Cycle Human-in-the-Loop</h2>
+            <p>Statut courant du parcours documentaire.</p>
+          </div>
+          <a class="button secondary" href="audit.html">Voir audit</a>
+        </div>
+        <div class="surface-body">
+          <div class="workflow" aria-label="Workflow documentaire">
+            <span class="step done">Brouillon IA</span>
+            <span class="step active">À revoir</span>
+            <span class="step">Validé</span>
+            <span class="step">Publié</span>
+            <span class="step blocked">Rejeté</span>
+            <span class="step">Obsolète</span>
+          </div>
+        </div>
+      </section>
+
+      <div class="layout-main-aside">
+        <section class="surface" id="edition-projet" aria-labelledby="edition-title">
+          <div class="surface-header">
+            <div>
+              <h2 id="edition-title">Données projet</h2>
+              <p>Champs métier rattachés à tous les artefacts.</p>
+            </div>
+            <span class="status running">project.read</span>
+          </div>
+          <form class="surface-body" action="projet.html">
+            <div class="form-grid">
+              <div class="field">
+                <label for="nom">Nom</label>
+                <input id="nom" type="text" value="Refonte CRM On-Premise">
+              </div>
+              <div class="field">
+                <label for="statut">Statut</label>
+                <select id="statut">
+                  <option>En validation</option>
+                  <option>En cadrage</option>
+                  <option>Validé</option>
+                  <option>Archivé</option>
+                </select>
+              </div>
+              <div class="field full">
+                <label for="objectif">Objectif</label>
+                <textarea id="objectif">Transformer les besoins métier et techniques CRM en livrables de cadrage validés.</textarea>
+              </div>
+              <div class="field full">
+                <label for="parties">Parties prenantes</label>
+                <textarea id="parties">Product Owner, Chef de Projet, Architecte Applicatif, sécurité, exploitation.</textarea>
+              </div>
+            </div>
+            <div class="button-row">
+              <button type="submit">Enregistrer</button>
+              <a class="button secondary" href="admin.html">Gérer membres</a>
+              <a class="button secondary" href="sources.html">Importer une source</a>
+            </div>
+          </form>
+        </section>
+
+        <aside class="surface" aria-labelledby="prochaines-actions">
+          <div class="surface-header">
+            <h2 id="prochaines-actions">Actions liées</h2>
+          </div>
+          <div class="surface-body">
+            <ul class="record-list">
+              <li>
+                <div class="record-title">
+                  <a class="row-link" href="contexte.html">Corriger 12 exigences</a>
+                  <span class="status ai">Brouillon IA</span>
+                </div>
+                <div class="meta">Issues de l'analyse du CDC v2.</div>
+              </li>
+              <li>
+                <div class="record-title">
+                  <a class="row-link" href="revue.html">Valider user stories CRM v3</a>
+                  <span class="status review">À revoir</span>
+                </div>
+                <div class="meta">Validation Product Owner attendue.</div>
+              </li>
+              <li>
+                <div class="record-title">
+                  <a class="row-link" href="publications.html">Publier périmètre fonctionnel</a>
+                  <span class="status validated">Validé</span>
+                </div>
+                <div class="meta">Publication Chef de Projet autorisée.</div>
+              </li>
+            </ul>
+          </div>
+        </aside>
+      </div>
+
+      <p class="footer-note" id="confirmation-archivage">Archivage : l'interface cible demande confirmation et conserve l'audit du changement de statut.</p>
+    </main>
+  </div>
+</body>
+</html>

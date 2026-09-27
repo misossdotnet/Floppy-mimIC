@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Audit - Floppy-MimIC</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="index.html" aria-label="Accueil Floppy-MimIC">
+      <span class="brand-mark">MiM</span>
+      <span><strong>Floppy-MimIC</strong><small>Centre de cadrage IA</small></span>
+    </a>
+    <form class="search" action="audit.html">
+      <label class="sr-only" for="global-search">Recherche audit</label>
+      <input id="global-search" type="search" placeholder="Rechercher une action, un acteur, une cible">
+    </form>
+    <div class="user-pill">Architecte Applicatif</div>
+  </header>
+
+  <div class="shell">
+    <nav class="sidebar" aria-label="Navigation principale">
+      <div class="nav-group">
+        <p class="nav-title">Espace projet</p>
+        <a class="nav-link" href="index.html"><span class="nav-icon">P</span>Projets</a>
+        <a class="nav-link" href="projet.html"><span class="nav-icon">F</span>Fiche projet</a>
+        <a class="nav-link" href="sources.html"><span class="nav-icon">S</span>Sources</a>
+        <a class="nav-link" href="contexte.html"><span class="nav-icon">C</span>Contexte</a>
+        <a class="nav-link" href="workflow.html"><span class="nav-icon">↗</span>Flux</a>
+        <a class="nav-link" href="pilotage.html"><span class="nav-icon">◫</span>Pilotage</a>
+        <a class="nav-link" href="agents.html"><span class="nav-icon">◎</span>Équipe IA</a>
+        <a class="nav-link" href="generations.html"><span class="nav-icon">G</span>Générations</a>
+      </div>
+      <div class="nav-group">
+        <p class="nav-title">Gouvernance</p>
+        <a class="nav-link" href="revue.html"><span class="nav-icon">R</span>Revue</a>
+        <a class="nav-link" href="versions.html"><span class="nav-icon">V</span>Versions</a>
+        <a class="nav-link" href="publications.html"><span class="nav-icon">E</span>Exports</a>
+        <a class="nav-link active" aria-current="page" href="audit.html"><span class="nav-icon">A</span>Audit</a>
+        <a class="nav-link" href="admin.html"><span class="nav-icon">M</span>Membres</a>
+      </div>
+    </nav>
+
+    <main class="content">
+      <div class="page-head">
+        <div>
+          <h1>Audit projet</h1>
+          <p>Générations, validations, rejets, commentaires, régénérations et publications.</p>
+        </div>
+        <div class="toolbar">
+          <span class="status running">audit.read</span>
+          <a class="button secondary" href="pilotage.html">Voir le pilotage</a>
+          <a class="button secondary" href="projet.html">Retour projet</a>
+        </div>
+      </div>
+
+      <nav class="tabs" aria-label="Onglets projet">
+        <a class="tab" href="projet.html">Vue d'ensemble</a>
+        <a class="tab" href="sources.html">Sources</a>
+        <a class="tab" href="contexte.html">Contexte</a>
+        <a class="tab" href="workflow.html">Flux</a>
+        <a class="tab" href="pilotage.html">Pilotage</a>
+        <a class="tab" href="agents.html">Équipe IA</a>
+        <a class="tab" href="generations.html">Générations</a>
+        <a class="tab" href="revue.html">Revue</a>
+        <a class="tab" href="versions.html">Versions</a>
+        <a class="tab active" aria-current="page" href="audit.html">Audit</a>
+      </nav>
+
+      <div class="layout-main-aside">
+        <section class="surface" aria-labelledby="audit-title">
+          <div class="surface-header">
+            <div>
+              <h2 id="audit-title">Timeline</h2>
+              <p>Journal filtrable sans secret ni contenu complet.</p>
+            </div>
+          </div>
+          <form class="filters" action="audit.html">
+            <div class="field">
+              <label for="event-type">Action</label>
+              <select id="event-type">
+                <option>Toutes</option>
+                <option>Validation</option>
+                <option>Rejet</option>
+                <option>Régénération</option>
+                <option>Publication</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="acteur">Acteur</label>
+              <select id="acteur">
+                <option>Tous</option>
+                <option>Nora Martin</option>
+                <option>Léo Bernard</option>
+                <option>AI Generation Worker</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="periode">Période</label>
+              <select id="periode">
+                <option>7 derniers jours</option>
+                <option>30 derniers jours</option>
+                <option>Projet complet</option>
+              </select>
+            </div>
+          </form>
+          <div class="surface-body">
+            <ol class="timeline">
+              <li>
+                <strong>Export PDF refusé pour User stories v3</strong>
+                <time>12 juin 2026 16:28, statut À revoir</time>
+              </li>
+              <li>
+                <strong>Commentaire ajouté sur User stories v3</strong>
+                <time>12 juin 2026 15:55, Product Owner</time>
+              </li>
+              <li>
+                <strong>Régénération User stories v2 vers v3</strong>
+                <time>12 juin 2026 15:14, motif conservé</time>
+              </li>
+              <li>
+                <strong>Architecture v2 validée</strong>
+                <time>12 juin 2026 14:48, Architecte Applicatif</time>
+              </li>
+              <li>
+                <strong>Import CDC_CRM_v2.pdf analysé</strong>
+                <time>12 juin 2026 09:42, AI Analysis Worker</time>
+              </li>
+            </ol>
+          </div>
+        </section>
+
+        <aside class="surface" aria-labelledby="event-detail-title">
+          <div class="surface-header">
+            <h2 id="event-detail-title">Détail événement</h2>
+          </div>
+          <div class="surface-body">
+            <ul class="definition-list">
+              <li><strong>Type</strong><div class="meta">Publication/export refusé</div></li>
+              <li><strong>Acteur</strong><div class="meta">Chef de Projet</div></li>
+              <li><strong>Cible</strong><div class="meta">deliverable_version/User stories v3</div></li>
+              <li><strong>Ancien statut</strong><div><span class="status review">À revoir</span></div></li>
+              <li><strong>Résultat</strong><div class="meta">Refus applicatif, export non produit.</div></li>
+              <li><strong>Métadonnées</strong><div class="meta mono">{ "reason": "version_not_validated" }</div></li>
+            </ul>
+            <div class="button-row">
+              <a class="button secondary" href="revue.html">Ouvrir cible</a>
+              <a class="button secondary" href="versions.html">Versions liées</a>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </main>
+  </div>
+</body>
+</html>
