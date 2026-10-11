@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% from "partials/ui.html" import csrf %}
+{% set active_page = 'projects' %}
+{% block title %}Créer un projet{% endblock %}
+{% block content %}
+<div class="app-page-head"><div><h1>Créer un projet</h1><p>Définissez le périmètre initial ; les décisions et livrables seront liés à cet espace.</p></div></div>
+<section class="app-panel" aria-labelledby="form-title"><h2 id="form-title">Informations du projet</h2>
+  <form class="app-form" method="post" action="/projects">{{ csrf(csrf_token) }}
+    <label for="name">Nom du projet <input id="name" name="name" maxlength="120" required value="{{ form.name|default('') }}"></label>
+    <label for="description">Description <textarea id="description" name="description" maxlength="3000">{{ form.description|default('') }}</textarea></label>
+    <div class="app-actions"><button type="submit">Créer le projet</button><a class="button secondary" href="/projects">Annuler</a></div>
+  </form>
+</section>
+{% endblock %}

@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% from "partials/ui.html" import status, empty, csrf %}
+{% set active_page = 'agents' %}
+{% block title %}Équipe IA · {{ project.name }}{% endblock %}
+{% block content %}
+<div class="app-page-head"><div><h1>Équipe IA</h1><p>Plan, tâches, transmissions et décisions humaines du run agentique.</p></div><a class="button secondary" href="/projects/{{ project.id }}/workflows">Voir le flux</a></div>
+{% include "partials/agent_space_nav.html" %}
+{% if run is defined and run %}
+<div class="app-grid">
+  <section class="app-panel" aria-labelledby="team-title"><h2 id="team-title">Profils autorisés</h2>
+    {% if profiles|default([]) %}<ul class="app-list">{% for profile in profiles %}<li><strong>{{ profile.name }}</strong> <span class="app-meta">v{{ profile.version }} · {{ profile.role }}</span></li>{% endfor %}</ul>{% else %}{{ empty('Aucun profil configuré pour ce flux.') }}{% endif %}
+  </section>
+  <section class="app-panel" aria-labelledby="plan-title"><h2 id="plan-title">Plan de travail</h2>
+    {% if plan is defined and plan %}<p>Version {{ plan.version }} · {{ status(plan.status) }}</p><p>{{ plan.summary }}</p><p class="app-meta">Limites : {{ plan.max_tasks }} tâches, {{ plan.max_parallel }} en parallèle, {{ plan.max_tokens }} tokens.</p>
+      {% if plan.parent_version %}<a href="/projects/{{ project.id }}/agents/runs/{{ run.id }}/plans/{{ plan.id }}/diff">Comparer avec v{{ plan.parent_version }}</a>{% endif %}
+      {% if permissions.agent_plan_edit|default(false) and plan.status != 'approved' %}<p><a class="button secondary" href="/projects/{{ project.id }}/agents/runs/{{ run.id }}/plans/{{ plan.id }}/edit">Créer une version corrigée</a></p>{% endif %}
+      {% if plan.status == 'review' and permissions.agent_plan_approve|default(false) %}<div class="app-inline-actions app-section">
+        <form method="post" action="/projects/{{ project.id }}/agents/runs/{{ run.id }}/plans/{{ plan.id }}/approve">{{ csrf(csrf_token) }}<button type="submit">Approuver le plan</button></form>
+        <form class="app-inline-form" method="post" action="/projects/{{ project.id }}/agents/runs/{{ run.id }}/plans/{{ plan.id }}/reject">{{ csrf(csrf_token) }}<label for="plan-reject-reason">Motif <input id="plan-reject-reason" name="reason" required></label><button type="submit">Rejeter</button></form>
+      </div>{% endif %}
+    {% else %}{{ empty('Le plan n’a pas encore été proposé. Aucune tâche ne peut démarrer.') }}{% endif %}
+  </section>
+</div>
+{% if permissions.agent_run_manage|default(false) %}<section class="app-panel app-section" aria-labelledby="run-controls-title"><h2 id="run-controls-title">Contrôler le run</h2><p>Une reprise ou un arrêt est autorisé et audité par l’API.</p><div class="app-inline-actions">
+  {% if run.status == 'running' %}<form method="post" action="/projects/{{ project.id }}/agents/runs/{{ run.id }}/pause">{{ csrf(csrf_token) }}<button type="submit">Suspendre</button></form>{% endif %}
+  {% if run.status == 'paused' %}<form method="post" action="/projects/{{ project.id }}/agents/runs/{{ run.id }}/resume">{{ csrf(csrf_token) }}<button type="submit">Reprendre</button></form>{% endif %}
+  {% if run.status in ['running', 'paused'] %}<form method="post" action="/projects/{{ project.id }}/agents/runs/{{ run.id }}/cancel">{{ csrf(csrf_token) }}<button type="submit">Arrêter</button></form>{% endif %}
+</div></section>{% endif %}
+<section class="app-panel app-section" aria-labelledby="next-actions-title"><h2 id="next-actions-title">Qui doit agir ensuite ?</h2>
+  {% if next_actions|default([]) %}<ul class="app-list">{% for action in next_actions %}<li><strong>{{ action.owner }}</strong> : {{ action.description }}{% if action.blocked_by %} <span class="app-meta">Bloqué par {{ action.blocked_by }}</span>{% endif %}</li>{% endfor %}</ul>{% else %}{{ empty('Aucune action en attente.') }}{% endif %}
+</section>
+<section class="app-panel app-section" aria-labelledby="agent-tasks-title"><h2 id="agent-tasks-title">Tâches techniques</h2><p class="app-meta">Une tâche terminée ne valide aucun livrable.</p>
+  {% if tasks|default([]) %}<div class="app-table-wrap"><table class="app-table"><thead><tr><th scope="col">Tâche</th><th scope="col">Profil</th><th scope="col">État</th><th scope="col">Dépendances</th><th scope="col">Sortie et revue</th></tr></thead><tbody>
+    {% for task in tasks %}<tr><td><a href="/projects/{{ project.id }}/agents/runs/{{ run.id }}/tasks/{{ task.id }}">{{ task.title }}</a></td><td>{{ task.profile_name }}</td><td>{{ status(task.status) }}</td><td>{{ task.dependencies_label|default('Aucune') }}</td><td>{% if task.output_href %}<a href="{{ task.output_href }}">{{ task.output_label }}</a>{% else %}—{% endif %}{% if task.review_label %}<div class="app-meta">Avis IA : {{ task.review_label }} · consultatif</div>{% endif %}</td></tr>{% endfor %}
+  </tbody></table></div>{% else %}{{ empty('Aucune tâche disponible pour ce run.') }}{% endif %}
+</section>
+{% else %}
+<section class="app-panel">{{ empty('Aucun run agentique actif. Ouvrez un flux validé pour proposer un plan.') }}</section>
+{% endif %}
+{% endblock %}

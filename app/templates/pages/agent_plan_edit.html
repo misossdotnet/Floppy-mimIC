@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% from "partials/ui.html" import status, empty, csrf %}
+{% set active_page = 'agents' %}
+{% block title %}Corriger le plan IA{% endblock %}
+{% block content %}
+<div class="app-page-head"><div><a class="app-meta" href="/projects/{{ project.id }}/agents?run_id={{ run.id }}">← Équipe IA</a><h1>Créer une version corrigée du plan</h1><p>La version {{ plan.version }} reste consultable ; une correction crée une nouvelle version soumise à approbation.</p></div>{{ status(plan.status) }}</div>
+<section class="app-panel" aria-labelledby="plan-edit-title"><h2 id="plan-edit-title">Tâches et dépendances</h2>
+  {% if plan.tasks|default([]) %}<form class="app-form" method="post" action="/projects/{{ project.id }}/agents/runs/{{ run.id }}/plans/{{ plan.id }}/revisions">{{ csrf(csrf_token) }}
+    <input type="hidden" name="expected_version" value="{{ plan.version }}">
+    {% for task in plan.tasks %}<fieldset class="app-task-fieldset"><legend>{{ task.key }}</legend><input type="hidden" name="tasks[{{ loop.index0 }}][key]" value="{{ task.key }}">
+      <label for="task-title-{{ loop.index0 }}">Titre <input id="task-title-{{ loop.index0 }}" name="tasks[{{ loop.index0 }}][title]" value="{{ task.title }}" required></label>
+      <label for="task-owner-{{ loop.index0 }}">Profil responsable <select id="task-owner-{{ loop.index0 }}" name="tasks[{{ loop.index0 }}][owner_profile]" required>{% for profile in profiles|default([]) %}<option value="{{ profile.id }}"{% if profile.id == task.owner_profile_id %} selected{% endif %}>{{ profile.name }}</option>{% endfor %}</select></label>
+      <label for="task-deps-{{ loop.index0 }}">Clés des dépendances <input id="task-deps-{{ loop.index0 }}" name="tasks[{{ loop.index0 }}][dependency_keys]" value="{{ task.dependency_keys|join(', ') }}" placeholder="AG-01, AG-02"></label>
+    </fieldset>{% endfor %}
+    <label for="plan-change-reason">Motif de la correction <textarea id="plan-change-reason" name="reason" required maxlength="3000"></textarea></label>
+    <button type="submit"{% if not permissions.agent_plan_edit|default(false) %} disabled{% endif %}>Créer la nouvelle version</button>
+  </form>{% else %}{{ empty('Ce plan ne contient aucune tâche modifiable.') }}{% endif %}
+  <p class="app-meta">Le serveur contrôle les profils, références projet, limites et cycles du DAG. Une nouvelle version ne démarre aucune tâche avant approbation humaine.</p>
+</section>
+{% endblock %}

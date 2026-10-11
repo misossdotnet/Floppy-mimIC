@@ -1,0 +1,5 @@
+# Extraction contrôlée du premier lot métier.
+pypdf>=5.0,<7.0
+python-docx>=1.1,<2.0
+openpyxl>=3.1,<4.0
+beautifulsoup4>=4.12,<5.0

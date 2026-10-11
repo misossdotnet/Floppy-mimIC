@@ -1,0 +1,90 @@
+.app-skip { position: absolute; left: 12px; top: -60px; z-index: 1000; padding: 8px 12px; background: #fff; border: 2px solid var(--primary); }
+.app-skip:focus { top: 10px; }
+.app-header-context { margin-left: auto; margin-right: 16px; color: var(--muted); font-size: 13px; }
+.app-content { max-width: 1600px; width: 100%; margin: 0 auto; }
+.app-alert { padding: 12px 14px; border-radius: var(--radius-sm); margin-bottom: 18px; }
+.app-alert-error { background: var(--danger-soft); color: var(--danger); }
+.app-alert-success { background: var(--success-soft); color: var(--success); }
+.app-alert-preview { background: var(--info-soft); color: var(--info); }
+.app-page-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 18px; }
+.app-page-head h1 { margin: 0 0 4px; }
+.app-page-head p { margin: 0; color: var(--muted); }
+.app-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.app-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.app-stack { display: grid; gap: 16px; }
+.app-panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px; }
+.app-panel h2, .app-panel h3 { margin-top: 0; }
+.app-panel > :last-child { margin-bottom: 0; }
+.app-table-wrap { overflow-x: auto; }
+.app-table { width: 100%; border-collapse: collapse; text-align: left; }
+.app-table th, .app-table td { padding: 10px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.app-table th { color: var(--muted); font-size: 12px; }
+.app-table tr:last-child td { border-bottom: 0; }
+.app-form { display: grid; gap: 14px; }
+.app-form label { display: grid; gap: 5px; font-weight: 700; font-size: 13px; }
+.app-form input, .app-form textarea, .app-form select { width: 100%; min-height: 38px; padding: 8px; border: 1px solid var(--line-strong); border-radius: var(--radius-sm); background: #fff; color: var(--ink); font-weight: 400; }
+.app-form textarea { min-height: 110px; resize: vertical; }
+.app-inline-form { display: flex; gap: 8px; align-items: end; flex-wrap: wrap; }
+.app-inline-form label { display: grid; gap: 4px; }
+.app-empty { padding: 24px; background: var(--surface-soft); border-radius: var(--radius-sm); color: var(--muted); }
+.app-list { padding-left: 20px; }
+.app-list li + li { margin-top: 8px; }
+.app-meta { color: var(--muted); font-size: 12px; }
+.app-reading { white-space: pre-wrap; overflow-wrap: anywhere; }
+.app-diff { white-space: pre-wrap; overflow-x: auto; font: 13px/1.5 ui-monospace, monospace; }
+.app-danger-zone { border-color: var(--danger); }
+.app-muted { color: var(--muted); }
+.runtime-metrics { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px 18px; }
+.runtime-metrics dt { font-weight: 700; }
+.runtime-metrics dd { margin: 0; overflow-wrap: anywhere; }
+.app-inline-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.app-task-fieldset { border: 1px solid var(--line); border-radius: var(--radius-sm); display: grid; gap: 12px; padding: 14px; }
+.app-section { margin-top: 16px; }
+.app-auth-shell { display: block; }
+.app-auth-shell .app-content { max-width: 560px; padding-top: 48px; }
+.app-auth-panel { max-width: 520px; }
+.app-logout { margin-left: 8px; }
+.app-logout button { font-size: 12px; }
+.app-invitation { border-color: var(--info); }
+.app-invitation-code { display: inline-block; padding: 10px; max-width: 100%; overflow-wrap: anywhere; background: var(--surface-soft); }
+.app-llm-actions { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.app-checkbox { display: flex !important; align-items: center; gap: 8px; }
+.app-checkbox input { width: auto; min-height: auto; }
+@media (max-width: 820px) { .app-grid { grid-template-columns: 1fr; }.app-page-head { display: block; }.app-page-head .app-actions { margin-top: 12px; }.app-header-context { display: none; } }
+@media (max-width: 600px) { .app-inline-form { display: grid; grid-template-columns: minmax(0, 1fr); }.app-inline-form input, .app-inline-form select { width: 100%; }.app-auth-shell .app-content { padding-top: 20px; } }
+
+/* Sprint : colonnes projetées, lecture en liste sur les petits écrans. */
+.sprint-board { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; }
+.sprint-column { min-width: 0; padding: 14px; }
+.sprint-column h2 { font-size: 1rem; overflow-wrap: anywhere; }
+.sprint-card { border-top: 1px solid var(--line); padding: 14px 0; overflow-wrap: anywhere; }
+.sprint-card h3 { font-size: 1rem; }
+.sprint-card p, .sprint-card li { font-size: .9rem; }
+.sprint-metrics { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+.sprint-metrics dt { color: var(--muted); }
+.sprint-metrics dd { margin: 8px 0 0; font-weight: 600; }
+.sprint-selection { padding: 12px 0; border-bottom: 1px solid var(--line); }
+.sprint-selection input[type=checkbox], .app-inline-form input[type=checkbox] { width: auto; min-height: auto; padding: 0; }
+@media (max-width: 1199px) { .sprint-board { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 767px) { .sprint-board, .sprint-metrics { grid-template-columns: 1fr; } }
+
+/* Équipe IA : contenu de coordination non fiable rendu comme texte en liste. */
+.agent-text { white-space: pre-wrap; overflow-wrap: anywhere; }
+.app-list li, .app-panel details { overflow-wrap: anywhere; }
+.app-panel summary { cursor: pointer; padding: 8px 0; }
+.app-panel summary:focus-visible { outline: 3px solid var(--primary); outline-offset: 3px; }
+@media (max-width: 767px) { .app-inline-form label { flex: 1 1 100%; } }
+.agent-space .app-inline-form select, .agent-space .app-inline-form input { min-height: 44px; max-width: 100%; }
+.agent-space-nav [aria-current=page] { background: var(--primary-soft); border-color: var(--primary); color: var(--primary-dark); }
+
+/* Revue Git : SHA et diff doivent rester lisibles dans la liste mobile. */
+.agent-code { overflow-wrap: anywhere; }
+.agent-code summary { cursor: pointer; padding: 8px 0; }
+.agent-code summary:focus-visible { outline: 3px solid var(--primary); outline-offset: 3px; }
+.agent-code .app-form { max-width: 760px; }
+.agent-code pre { max-width: 100%; }
+
+/* Pilotage : liste sémantique sans largeur de colonne imposée. */
+.pilotage-list > li { padding: 12px 0; border-bottom: 1px solid var(--line); }
+.pilotage-list h3, .pilotage-list p, .pilotage-list li { overflow-wrap: anywhere; }
+.pilotage-filters select { min-height: 44px; max-width: 100%; padding: 8px; border: 1px solid var(--line); border-radius: 8px; background: #fff; color: var(--ink); }

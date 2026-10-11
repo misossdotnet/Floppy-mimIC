@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% from "partials/ui.html" import status, empty %}
+{% set active_page = 'project' %}
+{% block title %}{{ project.name }}{% endblock %}
+{% block content %}
+<div class="app-page-head"><div><p class="app-meta">Espace projet</p><h1>{{ project.name }}</h1><p>{{ project.description|default('') }}</p></div>{{ status(project.status) }}</div>
+<div class="app-grid">
+  <section class="app-panel" aria-labelledby="project-overview"><h2 id="project-overview">Vue d’ensemble</h2><dl class="pilot-facts">
+    <div><dt>Responsable</dt><dd>{{ project.owner_name|default('—') }}</dd></div><div><dt>Dernière activité</dt><dd>{{ project.updated_at|default('—') }}</dd></div>
+    <div><dt>Sources</dt><dd>{{ metrics.sources|default(0) }}</dd></div><div><dt>Éléments à revoir</dt><dd>{{ metrics.pending_reviews|default(0) }}</dd></div>
+    <div><dt>Livrables validés</dt><dd>{{ metrics.validated|default(0) }}</dd></div><div><dt>Échecs ouverts</dt><dd>{{ metrics.failures|default(0) }}</dd></div>
+  </dl></section>
+  <section class="app-panel" aria-labelledby="attention-title"><h2 id="attention-title">Attention requise</h2>
+    {% if attention_items|default([]) %}<ul class="app-list">{% for item in attention_items %}<li><a href="{{ item.href }}">{{ item.title }}</a> <span class="app-meta">{{ item.reason }}</span></li>{% endfor %}</ul>
+    {% else %}{{ empty('Aucune action en attente.') }}{% endif %}
+  </section>
+</div>
+<section class="app-panel app-section" aria-labelledby="next-title"><h2 id="next-title">Continuer le cadrage</h2><div class="app-actions">
+  <a class="button secondary" href="/projects/{{ project.id }}/sources">Ajouter une source</a>
+  <a class="button secondary" href="/projects/{{ project.id }}/context">Corriger le contexte</a>
+  {% if identity_mode|default(false) %}<a class="button secondary" href="/projects/{{ project.id }}/generations">Générer un livrable</a>{% endif %}
+  {% if not identity_mode|default(false) %}
+  <a class="button secondary" href="/projects/{{ project.id }}/workflows">Ouvrir les flux</a>
+  <a class="button secondary" href="/projects/{{ project.id }}/pilotage">Voir le pilotage</a>
+  {% endif %}
+</div></section>
+{% endblock %}

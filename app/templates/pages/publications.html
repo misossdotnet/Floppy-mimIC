@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% from "partials/ui.html" import status, empty, csrf %}
+{% set active_page = 'publications' %}
+{% block title %}Publications · {{ project.name }}{% endblock %}
+{% block content %}
+<div class="app-page-head"><div><h1>Publications et exports</h1><p>Seules les versions validées peuvent devenir une référence projet.</p></div></div>
+<section class="app-panel" aria-labelledby="publishable-title"><h2 id="publishable-title">Versions validées</h2>
+  {% if publishable_versions|default([]) %}<div class="app-table-wrap"><table class="app-table"><thead><tr><th scope="col">Livrable</th><th scope="col">Version</th><th scope="col">Statut</th><th scope="col">Action</th></tr></thead><tbody>
+    {% for version in publishable_versions %}<tr><td><a href="/projects/{{ project.id }}/reviews/{{ version.id }}">{{ version.title }}</a></td><td>{{ version.version_label }}</td><td>{{ status(version.status) }}</td><td>
+      <div class="app-inline-actions">{% if permissions.deliverable_publish|default(false) %}<form method="post" action="/projects/{{ project.id }}/publications">{{ csrf(csrf_token) }}<input type="hidden" name="version_id" value="{{ version.id }}"><button type="submit">Publier</button></form>{% else %}Publication réservée au Chef de Projet{% endif %}</div>
+    </td></tr>{% endfor %}
+  </tbody></table></div>{% else %}{{ empty('Aucune version validée à publier.') }}{% endif %}
+</section>
+<section class="app-panel app-section" aria-labelledby="published-title"><h2 id="published-title">Références publiées</h2>
+  {% if published_versions|default([]) %}<ul class="app-list">{% for version in published_versions %}<li><a href="/projects/{{ project.id }}/reviews/{{ version.id }}">{{ version.title }} · {{ version.version_label }}</a>{% if permissions.deliverable_publish|default(false) %}<form method="post" action="/projects/{{ project.id }}/exports">{{ csrf(csrf_token) }}<input type="hidden" name="version_id" value="{{ version.id }}"><label>Format <select name="format"><option value="markdown">Markdown</option><option value="json">JSON</option></select></label><button type="submit">Demander un export</button></form>{% endif %}</li>{% endfor %}</ul>{% else %}{{ empty('Aucune référence publiée.') }}{% endif %}
+</section>
+<section class="app-panel app-section" aria-labelledby="exports-title"><h2 id="exports-title">Exports de référence</h2>
+  {% if exports|default([]) %}<div class="app-table-wrap"><table class="app-table"><thead><tr><th scope="col">Livrable</th><th scope="col">Format</th><th scope="col">Créé le</th><th scope="col">État / fichier</th></tr></thead><tbody>
+    {% for export in exports %}<tr><td>{{ export.title }}</td><td>{{ export.format }}</td><td>{{ export.created_at }}</td><td>{% if export.status == 'ready' %}<a href="/projects/{{ project.id }}/exports/{{ export.id }}/download">Télécharger</a>{% elif export.status == 'failed' %}Échec de l'export ; relancez une demande{% else %}{{ export.status }}{% endif %}</td></tr>{% endfor %}
+  </tbody></table></div>{% else %}{{ empty('Aucun export disponible.') }}{% endif %}
+</section>
+{% endblock %}

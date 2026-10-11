@@ -1,0 +1,3 @@
+# API identité/ACL et client LLM gouverné.
+-r requirements-identity.txt
+litellm>=1.83,<2.0,!=1.82.7,!=1.82.8

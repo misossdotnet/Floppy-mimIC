@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% from "partials/ui.html" import csrf, empty %}
+{% set active_page = 'admin' %}
+{% block title %}Utilisateurs{% endblock %}
+{% block content %}
+<div class="app-page-head"><div><h1>Utilisateurs</h1><p>Invitations, activation et comptes de la plateforme.</p></div></div>
+{% if invitation is defined and invitation %}
+<section class="app-panel app-invitation" aria-labelledby="invitation-title"><h2 id="invitation-title">Invitation créée</h2>
+  <p>Transmettez séparément à <strong>{{ invitation.email }}</strong> ce code et l'adresse <strong>/activate</strong>. Le code est affiché une seule fois et expire après 48 heures.</p>
+  <p><code class="app-invitation-code">{{ invitation.code }}</code></p>
+</section>{% endif %}
+<section class="app-panel app-section" aria-labelledby="invite-title"><h2 id="invite-title">Inviter un utilisateur</h2>
+  <form class="app-inline-form" method="post" action="/admin/users">{{ csrf(csrf_token) }}
+    <label for="display-name">Nom <input id="display-name" name="display_name" maxlength="120" required></label>
+    <label for="email">Adresse e-mail <input id="email" name="email" type="email" required></label>
+    <button type="submit">Créer l'invitation</button>
+  </form>
+</section>
+<section class="app-panel app-section" aria-labelledby="users-title"><h2 id="users-title">Comptes</h2>
+  {% if users %}<div class="app-table-wrap"><table class="app-table"><thead><tr><th>Nom</th><th>Adresse</th><th>Statut</th><th>Accès</th></tr></thead><tbody>
+  {% for item in users %}<tr><td>{{ item.display_name }}</td><td>{{ item.email }}</td><td>{% if item.is_active %}Actif{% else %}Invité ou désactivé{% endif %}</td><td>{% if item.is_platform_admin %}Administrateur{% else %}Membre projet{% endif %}{% if item.is_active and item.id != current_user.id %}<form method="post" action="/admin/users/{{ item.id }}/deactivate" class="app-section">{{ csrf(csrf_token) }}<button type="submit" class="secondary">Désactiver</button></form>{% endif %}</td></tr>{% endfor %}
+  </tbody></table></div>{% else %}{{ empty('Aucun compte.') }}{% endif %}
+</section>
+{% endblock %}

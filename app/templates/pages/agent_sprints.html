@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% from "partials/ui.html" import csrf, empty %}
+{% set active_page = 'sprints' %}
+{% block title %}Sprints · {{ project.name }}{% endblock %}
+{% macro planning_form(action, edit=false) %}
+<form method="post" action="{{ action }}" class="app-form">
+  {{ csrf(csrf_token) }}
+  {% if edit %}<input type="hidden" name="expected_revision" value="{{ form.expected_revision }}">{% else %}<input type="hidden" name="plan_id" value="{{ plan_id }}">{% endif %}
+  <label for="sprint-name">Nom <input id="sprint-name" name="name" maxlength="120" value="{{ form.name }}" required></label>
+  <label for="sprint-goal">Objectif <textarea id="sprint-goal" name="goal" maxlength="1000">{{ form.goal }}</textarea></label>
+  <p class="app-meta">Horaires en heure de Paris. Les échéances cibles du sprint ne changent pas celles du plan approuvé.</p>
+  <div class="app-grid"><label for="sprint-start">Début <input id="sprint-start" name="starts_at" type="datetime-local" value="{{ form.starts_at }}" required></label>
+    <label for="sprint-end">Fin <input id="sprint-end" name="ends_at" type="datetime-local" value="{{ form.ends_at }}" required></label></div>
+  <fieldset><legend>Feuilles du plan à suivre</legend>
+    {% for task in candidates %}<div class="sprint-selection">
+      <label for="select-{{ task.id }}"><input id="select-{{ task.id }}" type="checkbox" name="task_ids" value="{{ task.id }}" {% if task.id in form.task_ids %}checked{% endif %}> {{ task.title }} · {{ task.priority }}</label>
+      <label for="due-{{ task.id }}">Date cible facultative <input id="due-{{ task.id }}" type="datetime-local" name="due_{{ task.id }}" value="{{ form.dues.get(task.id, '') }}"></label>
+    </div>{% else %}<p>Aucune feuille disponible. Un brouillon vide peut être préparé.</p>{% endfor %}
+  </fieldset>
+  <button type="submit">{{ 'Enregistrer une nouvelle révision' if edit else 'Créer le brouillon' }}</button>
+</form>
+{% endmacro %}
+{% block content %}
+<div class="app-page-head"><div><h1>{{ board.sprint.name if board else 'Sprints' }}</h1><p>Suivi technique du travail ; validation des livrables dans la revue humaine.</p></div>{% if board %}<a class="button secondary" href="/projects/{{ project.id }}/agent-sprints">Tous les sprints</a>{% endif %}</div>
+{% if not board %}
+<section class="app-panel"><h2>Sprints du projet</h2>
+  {% if sprints %}<ul class="app-list">{% for sprint in sprints %}<li><a href="/projects/{{ project.id }}/agent-sprints/{{ sprint.id }}">{{ sprint.name }}</a> · {{ states[sprint.status] }} · {{ display_date(sprint.starts_at) }} → {{ display_date(sprint.ends_at) }}</li>{% endfor %}</ul>{% else %}{{ empty('Aucun sprint planifié.') }}{% endif %}
+</section>
+{% if permissions.sprint_manage %}<section class="app-panel app-section"><h2>Préparer un sprint</h2>
+  <form method="get" class="app-inline-form"><label for="plan-choice">Plan approuvé <select id="plan-choice" name="plan_id" required><option value="">Choisir un plan</option>{% for plan, team in plans %}<option value="{{ plan.id }}" {% if plan.id == plan_id %}selected{% endif %}>{{ team }} · {{ display_date(plan.created_at) }}</option>{% endfor %}</select></label><button type="submit">Charger les tâches</button></form>
+  {% if plan_id %}{{ planning_form('/projects/' ~ project.id ~ '/agent-sprints') }}{% elif not plans %}<p>Aucun plan approuvé disponible. Préparez et approuvez d'abord un plan.</p>{% endif %}
+</section>{% endif %}
+{% else %}
+{% set sprint = board.sprint %}
+<section class="app-panel"><h2>Calendrier et objectif</h2><p>{{ sprint.goal or 'Objectif non renseigné.' }}</p><p>{{ states[sprint.status] }} · révision {{ sprint.revision }} · {{ display_date(sprint.starts_at) }} → {{ display_date(sprint.ends_at) }} (Paris)</p>
+  <p class="app-meta">État actuel des tâches, actualisé le {{ display_date(board.as_of) }}. Les métriques sont limitées à la période du sprint, arrêtée à sa clôture.</p>
+  {% if board.period_ended and sprint.status == 'active' %}<p role="status">La période est terminée ; la clôture humaine du sprint reste attendue.</p>{% endif %}
+  {% if permissions.sprint_manage and sprint.status in ['draft','active'] %}<div class="app-inline-actions">
+    {% if sprint.status == 'draft' %}<form method="post" action="/projects/{{ project.id }}/agent-sprints/{{ sprint.id }}/start">{{ csrf(csrf_token) }}<input type="hidden" name="expected_revision" value="{{ sprint.revision }}"><button type="submit">Démarrer le sprint</button></form>{% endif %}
+    {% for action,label in [('close','Clore le sprint'),('cancel','Annuler le sprint')] %}{% if action == 'cancel' or sprint.status == 'active' %}<form method="post" action="/projects/{{ project.id }}/agent-sprints/{{ sprint.id }}/{{ action }}">{{ csrf(csrf_token) }}<input type="hidden" name="expected_revision" value="{{ sprint.revision }}"><label><input type="checkbox" name="confirmation" value="true" required> Confirmer {{ 'la clôture' if action == 'close' else "l'annulation" }} du suivi, sans arrêter les tâches</label><button type="submit">{{ label }}</button></form>{% endif %}{% endfor %}
+  </div>{% endif %}
+</section>
+<section class="app-panel app-section"><h2>Indicateurs sur l'ensemble du sprint</h2><dl class="sprint-metrics">
+  <div><dt>Throughput</dt><dd>{{ board.metrics.throughput_count }} feuille(s) achevée(s)</dd></div>
+  <div><dt>Cycle time moyen</dt><dd>{% if board.metrics.cycle_time_average_seconds is not none %}{{ (board.metrics.cycle_time_average_seconds / 3600)|round(2) }} h · {{ board.metrics.cycle_time_sample_count }} échantillon(s){% else %}Non disponible{% endif %}</dd></div>
+  <div><dt>Blocages actuels</dt><dd>{{ board.metrics.blocked_count }}</dd></div><div><dt>Échéances dépassées</dt><dd>{{ board.metrics.overdue_count }}</dd></div>
+</dl><p class="app-meta">Cycle time calendaire, incluant attentes et reprises. Durée historique des blocages : non disponible.</p></section>
+<section class="app-panel app-section"><h2>Filtres du board</h2><form method="get" class="app-inline-form">
+  <label for="column-filter">Colonne <select id="column-filter" name="column"><option value="">Toutes</option>{% for key,label in columns.items() %}<option value="{{ key }}" {% if key == filters.column %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>
+  <label><input type="checkbox" name="overdue_only" value="true" {% if filters.overdue_only %}checked{% endif %}> Échéance dépassée</label>
+  <label><input type="checkbox" name="blocked_only" value="true" {% if filters.blocked_only %}checked{% endif %}> Bloquées seulement</label><button type="submit">Filtrer et actualiser</button>
+  <a href="/projects/{{ project.id }}/agent-sprints/{{ sprint.id }}">Réinitialiser les filtres</a></form></section>
+<div class="sprint-board app-section">
+{% for key,label in columns.items() %}<section class="app-panel sprint-column" aria-labelledby="column-{{ key }}"><h2 id="column-{{ key }}">{{ label }} <span class="app-meta">({{ board.counts[key] }})</span></h2>
+  {% for card in board.cards if card.column == key %}<article class="sprint-card">
+    {% if card.ancestors %}<p class="app-meta">{{ card.ancestors|join(' → ') }}</p>{% endif %}<h3>{{ card.title }}</h3><p>{{ card.priority }} · {{ card.skill_code }} · {{ card.progress_percent }} %</p>
+    <p>Échéance : {{ display_date(card.effective_due_at) }} (Paris){% if card.overdue %} · <strong>Dépassée</strong>{% elif card.completed_late %} · Achevée après l'échéance{% endif %}</p>
+    {% if card.target_due_at and card.due_at %}<p class="app-meta">Échéance du plan : {{ display_date(card.due_at) }}</p>{% endif %}
+    {% if card.blocker_labels %}<ul>{% for cause in card.blocker_labels %}<li>{{ cause }}</li>{% endfor %}</ul>{% endif %}<p>{{ card.next_action }}</p>
+  </article>{% else %}<p class="app-meta">Aucune carte correspondant aux filtres.</p>{% endfor %}
+</section>{% endfor %}</div>
+{% if permissions.sprint_manage and sprint.status == 'draft' %}<section class="app-panel app-section"><h2>Réviser le brouillon</h2><p>La sélection et les dates précédentes restent dans l'historique.</p>{{ planning_form('/projects/' ~ project.id ~ '/agent-sprints/' ~ sprint.id ~ '/edit', true) }}</section>{% endif %}
+<section class="app-panel app-section"><h2>Historique de planification</h2><ul class="app-list">{% for revision in history %}<li>Révision {{ revision.revision }} · {{ display_date(revision.created_at) }} · {{ states[revision.snapshot.status] }} · {{ revision.snapshot.name }} · {{ revision.snapshot['items']|length }} feuille(s)</li>{% endfor %}</ul></section>
+{% endif %}
+{% endblock %}

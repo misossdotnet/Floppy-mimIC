@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% from "partials/ui.html" import status, empty, csrf %}
+{% set active_page = 'generations' %}
+{% block title %}Générations · {{ project.name }}{% endblock %}
+{% block content %}
+<div class="app-page-head"><div><h1>Générations documentaires</h1><p>Chaque génération crée une version en Brouillon IA, liée au contexte et au modèle utilisés.</p></div></div>
+<div class="app-grid">
+  <section class="app-panel" aria-labelledby="generate-title"><h2 id="generate-title">Nouvelle génération</h2>
+    <form class="app-form" method="post" action="/projects/{{ project.id }}/generations">{{ csrf(csrf_token) }}
+      <label for="deliverable-type">Type de livrable <select id="deliverable-type" name="deliverable_type" required><option value="">Choisir</option>{% for kind in deliverable_types|default([]) %}<option value="{{ kind.code }}">{{ kind.label }}</option>{% endfor %}</select></label>
+      <label for="generation-style">Style <select id="generation-style" name="style" required>{% for style in document_styles|default([]) %}<option value="{{ style.code }}">{{ style.label }}</option>{% endfor %}</select></label>
+      <fieldset><legend>Éléments de contexte à utiliser</legend>{% if context_items|default([]) %}{% for item in context_items %}<label><input type="checkbox" name="context_ids" value="{{ item.id }}"> {{ item.title }} · {{ item.type }} · v{{ item.version }} · {{ item.status }}</label>{% endfor %}{% else %}<p>Ajoutez du contexte avant de générer.</p>{% endif %}</fieldset>
+      {% if not profile_available|default(false) %}<p class="app-alert app-alert-error" role="status">Aucun profil LLM par défaut disponible.</p>{% endif %}
+      <button type="submit"{% if not permissions.generation_create|default(false) or not context_items|default([]) or not profile_available|default(false) %} disabled{% endif %}>Lancer la génération</button>
+    </form>
+  </section>
+  <section class="app-panel" aria-labelledby="generation-context-title"><h2 id="generation-context-title">Contexte source</h2>
+    <p>{{ context_summary|default('Aucun contexte sélectionné.') }}</p>
+    {% if unvalidated_context_count|default(0) %}<div class="app-alert app-alert-error" role="note">{{ unvalidated_context_count }} élément(s) disponibles ne sont pas validés. Vérifiez le statut des éléments choisis avant le lancement.</div>{% endif %}
+    <a class="button secondary" href="/projects/{{ project.id }}/context">Voir le référentiel</a>
+  </section>
+</div>
+<section class="app-panel app-section" aria-labelledby="generation-list-title"><h2 id="generation-list-title">Historique des traitements</h2>
+  {% if generation_runs|default([]) %}<div class="app-table-wrap"><table class="app-table"><thead><tr><th scope="col">Livrable</th><th scope="col">Tentative</th><th scope="col">État technique</th><th scope="col">Version courante</th><th scope="col">Tokens</th><th scope="col">Coût estimé</th></tr></thead><tbody>
+    {% for run in generation_runs %}<tr><td>{{ run.title }}{% if run.is_regeneration %}<span class="app-meta"> · Régénération</span>{% if run.reason %}<p>{{ run.reason }}</p>{% endif %}{% endif %}</td><td>{{ run.attempt }}</td><td>{{ status(run.status) }}{% if run.error_code %}<span class="app-meta"> · {{ run.error_code }}</span>{% endif %}{% if run.status == 'failed' and permissions.generation_create|default(false) %}<form method="post" action="/projects/{{ project.id }}/generations/{{ run.id }}/retry">{{ csrf(csrf_token) }}<button type="submit">Relancer</button></form>{% endif %}</td><td>{% if run.version_id %}<a href="/projects/{{ project.id }}/reviews/{{ run.version_id }}">{{ run.version_label }}</a>{% else %}—{% endif %}</td><td>{{ run.tokens_label|default('Non disponible') }}</td><td>{{ run.cost_label|default('Non disponible') }}</td></tr>{% endfor %}
+  </tbody></table></div>{% else %}{{ empty('Aucune génération lancée pour ce projet.') }}{% endif %}
+</section>
+{% endblock %}

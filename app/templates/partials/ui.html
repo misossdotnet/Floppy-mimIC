@@ -1,0 +1,12 @@
+{% macro status(value) -%}
+  {% set styles = {'Brouillon IA': 'ai', 'À revoir': 'review', 'Validé': 'validated', 'Rejeté': 'rejected', 'Publié': 'published', 'Obsolète': 'obsolete', 'En attente': 'review', 'Extraction': 'running', 'Extrait': 'done', 'Analyse IA': 'running', 'Analysé': 'done', 'Terminée': 'done', 'Échec': 'rejected', 'approved': 'validated', 'proposed': 'review', 'review': 'review', 'running': 'running', 'completed': 'done', 'failed': 'rejected', 'blocked': 'rejected'} %}
+  <span class="status {{ styles.get(value, 'obsolete') }}">{{ value }}</span>
+{%- endmacro %}
+
+{% macro empty(message) -%}
+  <div class="app-empty" role="status">{{ message }}</div>
+{%- endmacro %}
+
+{% macro csrf(token) -%}
+  <input type="hidden" name="csrf_token" value="{{ token }}">
+{%- endmacro %}

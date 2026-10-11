@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% from "partials/ui.html" import status, empty %}
+{% set active_page = 'pilotage' %}
+{% block title %}Pilotage · {{ project.name }}{% endblock %}
+{% block content %}
+{% if pilotage is defined %}
+{% include 'partials/pilotage_project.html' %}
+{% else %}
+<div class="app-page-head"><div><h1>Pilotage opérationnel</h1><p>Traitements, décisions humaines, erreurs et consommation IA du projet.</p></div></div>
+<section class="app-panel" aria-labelledby="pilotage-summary-title"><h2 id="pilotage-summary-title">Synthèse</h2><dl class="pilot-facts">
+  <div><dt>En cours</dt><dd>{{ metrics.running|default(0) }}</dd></div><div><dt>Décisions humaines</dt><dd>{{ metrics.human_decisions|default(0) }}</dd></div><div><dt>Échecs</dt><dd>{{ metrics.failures|default(0) }}</dd></div><div><dt>Coût LLM estimé</dt><dd>{{ metrics.cost_label|default('Non disponible') }}</dd></div>
+</dl>{% if metrics.cost_partial|default(false) %}<p class="app-meta">Estimation partielle : métriques ou tarif manquants.</p>{% endif %}</section>
+<section class="app-panel app-section" aria-labelledby="activities-title"><h2 id="activities-title">Activités</h2>
+  <form class="app-inline-form" method="get" action="/projects/{{ project.id }}/pilotage"><label for="activity-state">État <select id="activity-state" name="state"><option value="">Tous</option>{% for value in ['En attente', 'En cours', 'Décision humaine', 'Terminé', 'Échec'] %}<option value="{{ value }}"{% if filters.state|default('') == value %} selected{% endif %}>{{ value }}</option>{% endfor %}</select></label><button type="submit">Filtrer</button></form>
+  {% if activities|default([]) %}<div class="app-table-wrap"><table class="app-table"><thead><tr><th scope="col">Activité</th><th scope="col">État technique</th><th scope="col">Statut documentaire</th><th scope="col">Prochain acteur</th><th scope="col">Détail</th></tr></thead><tbody>
+    {% for item in activities %}<tr><td><strong>{{ item.title }}</strong><div class="app-meta">{{ item.kind }} · {{ item.reference }}</div></td><td>{{ status(item.state) }}</td><td>{% if item.document_status %}{{ status(item.document_status) }}{% else %}Sans objet{% endif %}</td><td>{{ item.action_owner|default('—') }}</td><td><a href="{{ item.href }}">Ouvrir</a></td></tr>{% endfor %}
+  </tbody></table></div>{% else %}{{ empty('Aucune activité ne correspond aux filtres.') }}{% endif %}
+</section>
+{% endif %}
+{% endblock %}

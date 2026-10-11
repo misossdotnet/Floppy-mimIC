@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% from "partials/ui.html" import status, empty %}
+{% set active_page = 'sources' %}
+{% block title %}Source · {{ source.name }}{% endblock %}
+{% block content %}
+<div class="app-page-head"><div><a class="app-meta" href="/projects/{{ project.id }}/sources">← Sources</a><h1>{{ source.name }}</h1><p>{{ source.kind }} · Importé le {{ source.created_at }}</p></div>{{ status(source.processing_status) }}</div>
+<div class="app-grid"><section class="app-panel" aria-labelledby="source-meta-title"><h2 id="source-meta-title">Contrôles et provenance</h2><dl class="pilot-facts">
+  <div><dt>Type vérifié</dt><dd>{{ source.mime_type|default('—') }}</dd></div><div><dt>Taille</dt><dd>{{ source.size_label|default('—') }}</dd></div><div><dt>Empreinte</dt><dd>{{ source.hash_short|default('—') }}</dd></div><div><dt>Tentative</dt><dd>{{ source.attempt|default('—') }}</dd></div>
+</dl></section><section class="app-panel" aria-labelledby="source-analysis-title"><h2 id="source-analysis-title">Analyse IA</h2>
+  {% if source.analysis_status %}<p>{{ status(source.analysis_status) }}</p><p>{{ source.analysis_summary|default('') }}</p><a class="button secondary" href="/projects/{{ project.id }}/context">Examiner les propositions</a>{% else %}{{ empty('Aucune analyse disponible pour cette source.') }}{% endif %}
+</section></div>
+{% if source.error_message %}<div class="app-alert app-alert-error app-section" role="alert">{{ source.error_message }}</div>{% endif %}
+{% if identity_mode|default(false) %}
+<section class="app-panel app-section"><h2>Actions</h2><div class="app-actions">
+  {% if source.kind == 'Document' %}<a class="button secondary" href="/projects/{{ project.id }}/sources/{{ source.id }}/download">Télécharger la source</a>{% endif %}
+  {% if source.raw_status in ['extracted', 'analyzed'] %}<form method="post" action="/projects/{{ project.id }}/sources/{{ source.id }}/analyze"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button type="submit"{% if not can_analyze %} disabled{% endif %}>{{ 'Relancer l’analyse IA' if source.raw_status == 'analyzed' else 'Lancer l’analyse IA' }}</button></form>{% endif %}
+  {% if source.raw_status == 'error' %}<form method="post" action="/projects/{{ project.id }}/sources/{{ source.id }}/retry"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button type="submit"{% if not can_retry %} disabled{% endif %}>Relancer l’extraction</button></form>{% endif %}
+</div><p class="app-meta">L’analyse crée uniquement des propositions en Brouillon IA. La validation est humaine.</p></section>
+{% if analysis_runs %}<section class="app-panel app-section"><h2>Tentatives d’analyse</h2><ul class="app-list">{% set run_labels = {'queued': 'En attente', 'running': 'En cours', 'completed': 'Terminée', 'failed': 'Échec'} %}{% for run in analysis_runs %}<li>{{ run.created_at.strftime('%d/%m/%Y %H:%M') }} · {{ run_labels.get(run.status, run.status) }} · Profil {{ run.llm_profile_version_id[:8] }}{% if run.error_code %} · Code {{ run.error_code }}{% endif %} · {{ run.input_tokens if run.input_tokens is not none else 'Non disponible' }} tokens entrée / {{ run.output_tokens if run.output_tokens is not none else 'Non disponible' }} tokens sortie · Coût estimé : {% if run.estimated_cost is not none %}{{ run.estimated_cost }} {{ run.cost_currency }} ({{ run.pricing_source }}, {{ run.pricing_date }}){% else %}Non disponible{% endif %} · <a href="/api/projects/{{ project.id }}/llm-runs/analysis/{{ run.id }}">Provenance détaillée</a></li>{% endfor %}</ul></section>{% endif %}
+{% endif %}
+{% endblock %}

@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block title %}{{ title|default('Erreur') }}{% endblock %}
+{% block content %}
+<section class="app-panel" role="alert"><h1>{{ title|default('Une erreur est survenue') }}</h1><p>{{ message|default('La page demandée ne peut pas être affichée.') }}</p>
+  {% if request_id is defined and request_id %}<p class="app-meta">Référence : {{ request_id }}</p>{% endif %}
+  <a class="button secondary" href="/projects">Retour aux projets</a>
+</section>
+{% endblock %}

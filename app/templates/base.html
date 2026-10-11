@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Floppy-MimIC{% endblock %} · MiM Intelligence Center</title>
+  <link rel="stylesheet" href="{{ url_for('static', path='/css/prototype.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', path='/css/app.css') }}">
+  {% block head %}{% endblock %}
+</head>
+<body{% if preview_mode|default(false) %} class="app-preview"{% endif %}>
+  <a class="app-skip" href="#contenu">Aller au contenu</a>
+  <header class="topbar">
+    <a class="brand" href="/projects" aria-label="Accueil Floppy-MimIC">
+      <span class="brand-mark">MiM</span>
+      <span><strong>Floppy-MimIC</strong><small>Centre de cadrage IA</small></span>
+    </a>
+    <div class="app-header-context">{% block breadcrumb %}{% if project is defined and project %}{{ project.name }}{% else %}Projets{% endif %}{% endblock %}</div>
+    <div class="user-pill">{% if current_user is defined and current_user %}{{ current_user.display_name }}{% else %}<a href="/login">Connexion</a>{% endif %}</div>
+    {% if identity_mode|default(false) and current_user is defined and current_user %}<form method="post" action="/logout" class="app-logout"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button type="submit">Se déconnecter</button></form>{% endif %}
+  </header>
+  <div class="shell{% if identity_mode|default(false) and not current_user %} app-auth-shell{% endif %}">
+    {% set project_base = '/projects/' ~ project.id if project is defined and project else none %}
+    {% if current_user is defined and current_user %}
+    <nav class="sidebar" aria-label="Navigation principale">
+      <div class="nav-group">
+        <p class="nav-title">Espace projet</p>
+        <a class="nav-link{% if active_page|default('') == 'projects' %} active{% endif %}" {% if active_page|default('') == 'projects' %}aria-current="page"{% endif %} href="/projects"><span class="nav-icon">P</span>Projets</a>
+        {% if project_base %}
+        <a class="nav-link{% if active_page|default('') == 'project' %} active{% endif %}" {% if active_page|default('') == 'project' %}aria-current="page"{% endif %} href="{{ project_base }}"><span class="nav-icon">F</span>Fiche projet</a>
+        <a class="nav-link{% if active_page|default('') == 'sources' %} active{% endif %}" {% if active_page|default('') == 'sources' %}aria-current="page"{% endif %} href="{{ project_base }}/sources"><span class="nav-icon">S</span>Sources</a>
+        <a class="nav-link{% if active_page|default('') == 'context' %} active{% endif %}" {% if active_page|default('') == 'context' %}aria-current="page"{% endif %} href="{{ project_base }}/context"><span class="nav-icon">C</span>Contexte</a>
+        <a class="nav-link{% if active_page|default('') == 'generations' %} active{% endif %}" {% if active_page|default('') == 'generations' %}aria-current="page"{% endif %} href="{{ project_base }}/generations"><span class="nav-icon">G</span>Générations</a>
+        <a class="nav-link{% if active_page|default('') == 'review' %} active{% endif %}" {% if active_page|default('') == 'review' %}aria-current="page"{% endif %} href="{{ project_base }}/reviews"><span class="nav-icon">R</span>Revue</a>
+        <a class="nav-link{% if active_page|default('') == 'publications' %} active{% endif %}" {% if active_page|default('') == 'publications' %}aria-current="page"{% endif %} href="{{ project_base }}/publications"><span class="nav-icon">E</span>Publications</a>
+        <a class="nav-link{% if active_page|default('') == 'versions' %} active{% endif %}" {% if active_page|default('') == 'versions' %}aria-current="page"{% endif %} href="{{ project_base }}/versions"><span class="nav-icon">V</span>Versions</a>
+        {% if identity_mode|default(false) %}<a class="nav-link{% if active_page|default('') == 'sprints' %} active{% endif %}" {% if active_page|default('') == 'sprints' %}aria-current="page"{% endif %} href="{{ project_base }}/agent-sprints"><span class="nav-icon">◫</span>Sprints</a>{% endif %}
+        {% if identity_mode|default(false) %}<a class="nav-link{% if active_page|default('') == 'coffy' %} active{% endif %}" {% if active_page|default('') == 'coffy' %}aria-current="page"{% endif %} href="{{ project_base }}/scheduled-tasks"><span class="nav-icon">↻</span>Tâches récurrentes</a>{% endif %}
+        {% if identity_mode|default(false) %}<a class="nav-link{% if active_page|default('') == 'agents' %} active{% endif %}" {% if active_page|default('') == 'agents' %}aria-current="page"{% endif %} href="{{ project_base }}/agents"><span class="nav-icon">◎</span>Équipe IA</a>{% endif %}
+        <a class="nav-link{% if active_page|default('') == 'pilotage' %} active{% endif %}" {% if active_page|default('') == 'pilotage' %}aria-current="page"{% endif %} href="{{ project_base }}/pilotage"><span class="nav-icon">◫</span>Pilotage</a>
+        {% if not identity_mode|default(false) %}
+        <a class="nav-link{% if active_page|default('') == 'workflow' %} active{% endif %}" {% if active_page|default('') == 'workflow' %}aria-current="page"{% endif %} href="{{ project_base }}/workflows"><span class="nav-icon">↗</span>Flux</a>
+        <a class="nav-link{% if active_page|default('') == 'agents' %} active{% endif %}" {% if active_page|default('') == 'agents' %}aria-current="page"{% endif %} href="{{ project_base }}/agents"><span class="nav-icon">◎</span>Équipe IA</a>
+        </div>
+        <div class="nav-group"><p class="nav-title">Gouvernance</p>
+        <a class="nav-link{% if active_page|default('') == 'audit' %} active{% endif %}" {% if active_page|default('') == 'audit' %}aria-current="page"{% endif %} href="{{ project_base }}/audit"><span class="nav-icon">A</span>Audit</a>
+        {% endif %}
+        <a class="nav-link{% if active_page|default('') == 'members' %} active{% endif %}" {% if active_page|default('') == 'members' %}aria-current="page"{% endif %} href="{{ project_base }}/members"><span class="nav-icon">M</span>Membres</a>
+        {% endif %}
+      </div>
+      {% if permissions.platform_admin|default(false) or preview_mode|default(false) %}
+      <div class="nav-group"><p class="nav-title">Plateforme</p><a class="nav-link{% if active_page|default('') == 'admin' %} active{% endif %}" {% if active_page|default('') == 'admin' %}aria-current="page"{% endif %} href="{% if identity_mode|default(false) %}/admin/users{% else %}/admin{% endif %}"><span class="nav-icon">⚙</span>Utilisateurs</a>{% if identity_mode|default(false) %}<a class="nav-link{% if active_page|default('') == 'llm' %} active{% endif %}" {% if active_page|default('') == 'llm' %}aria-current="page"{% endif %} href="/admin/llm"><span class="nav-icon">◎</span>Modèles LLM</a>{% endif %}</div>
+      {% endif %}
+    </nav>
+    {% endif %}
+    <main id="contenu" class="content app-content" tabindex="-1">
+      {% if preview_mode|default(false) %}<div class="app-alert app-alert-preview" role="note"><strong>Aperçu des templates.</strong> Données locales de présentation ; les actions métier sont désactivées.</div>{% endif %}
+      {% if error_message is defined and error_message %}<div class="app-alert app-alert-error" role="alert" tabindex="-1" autofocus>{{ error_message }}</div>{% endif %}
+      {% if success_message is defined and success_message %}<div class="app-alert app-alert-success" role="status">{{ success_message }}</div>{% endif %}
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+  {% block scripts %}{% endblock %}
+  {% if preview_mode|default(false) %}<script src="{{ url_for('static', path='/js/preview.js') }}" defer></script>{% endif %}
+</body>
+</html>

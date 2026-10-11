@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% from "partials/ui.html" import status, empty %}
+{% set active_page = 'projects' %}
+{% block title %}Projets{% endblock %}
+{% block content %}
+<div class="app-page-head"><div><h1>Projets</h1><p>Espaces de cadrage auxquels vous avez accès.</p></div>
+  {% if permissions.project_create|default(false) %}<a class="button" href="/projects/new">Créer un projet</a>{% endif %}
+</div>
+<section class="app-panel" aria-labelledby="projects-title">
+  <h2 id="projects-title">Mes projets</h2>
+  <form class="app-inline-form" method="get" action="/projects" role="search">
+    <label for="project-search">Rechercher <input id="project-search" name="q" type="search" value="{{ filters.q|default('') }}"></label>
+    <label for="project-status">Statut <select id="project-status" name="status"><option value="">Tous</option>{% for value in project_statuses|default([]) %}<option value="{{ value }}"{% if filters.status|default('') == value %} selected{% endif %}>{{ value }}</option>{% endfor %}</select></label>
+    <button type="submit">Filtrer</button>
+  </form>
+  {% if projects|default([]) %}
+  <div class="app-table-wrap"><table class="app-table"><thead><tr><th scope="col">Projet</th><th scope="col">Statut</th><th scope="col">Rôle</th><th scope="col">Dernière activité</th></tr></thead><tbody>
+    {% for item in projects %}<tr><td><a href="/projects/{{ item.id }}"><strong>{{ item.name }}</strong></a><div class="app-meta">{{ item.description|default('') }}</div></td><td>{{ status(item.status) }}</td><td>{{ item.role|default('—') }}</td><td>{{ item.updated_at|default('—') }}</td></tr>{% endfor %}
+  </tbody></table></div>
+  {% else %}{{ empty('Aucun projet accessible. Créez un projet ou demandez un accès.') }}{% endif %}
+</section>
+{% endblock %}

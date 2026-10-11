@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% from "partials/ui.html" import status, empty %}
+{% set active_page = 'agents' %}
+{% block title %}Tâche IA · {{ task.title }}{% endblock %}
+{% block content %}
+<div class="app-page-head"><div><a class="app-meta" href="/projects/{{ project.id }}/agents?run_id={{ run.id }}">← Équipe IA</a><h1>{{ task.title }}</h1><p>{{ task.key }} · Profil {{ task.profile_name }} · Plan v{{ task.plan_version }}</p></div>{{ status(task.status) }}</div>
+<div class="app-grid"><section class="app-panel" aria-labelledby="task-input-title"><h2 id="task-input-title">Entrées et dépendances</h2>
+  <p>{{ task.description|default('') }}</p>
+  {% if task.dependencies|default([]) %}<ul class="app-list">{% for dependency in task.dependencies %}<li>{{ dependency.title }} · {{ status(dependency.status) }}</li>{% endfor %}</ul>{% else %}{{ empty('Aucune dépendance.') }}{% endif %}
+  {% if task.blocked_reason %}<p class="app-alert app-alert-error">Bloquée : {{ task.blocked_reason }}</p>{% endif %}
+</section><section class="app-panel" aria-labelledby="task-output-title"><h2 id="task-output-title">Sortie et avis</h2>
+  {% if task.output_href %}<p><a href="{{ task.output_href }}">{{ task.output_label }}</a></p><p class="app-meta">Statut documentaire : {{ task.document_status|default('Brouillon IA') }}. Une décision humaine reste nécessaire.</p>{% else %}{{ empty('Aucune sortie produite.') }}{% endif %}
+  {% if task.review_summary %}<h3>Avis IA consultatif</h3><p>{{ task.review_summary }}</p>{% endif %}
+</section></div>
+<section class="app-panel app-section" aria-labelledby="task-history-title"><h2 id="task-history-title">Tentatives et transmissions</h2>
+  {% if task.events|default([]) %}<ol class="app-list">{% for event in task.events %}<li><strong>{{ event.label }}</strong> <span class="app-meta">{{ event.created_at }} · tentative {{ event.attempt }}</span><p>{{ event.summary }}</p></li>{% endfor %}</ol>{% else %}{{ empty('Aucun événement enregistré.') }}{% endif %}
+</section>
+{% endblock %}

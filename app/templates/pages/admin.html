@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% from "partials/ui.html" import empty, csrf %}
+{% set active_page = 'admin' %}
+{% block title %}Administration{% endblock %}
+{% block content %}
+<div class="app-page-head"><div><h1>Administration de la plateforme</h1><p>Fournisseurs LLM, limites et journal technique sans exposition de secrets.</p></div></div>
+<div class="app-grid">
+  <section class="app-panel" aria-labelledby="llm-title"><h2 id="llm-title">Configuration LLM</h2>
+    <dl class="pilot-facts"><div><dt>Fournisseur</dt><dd>{{ llm_config.provider|default('Non configuré') }}</dd></div><div><dt>Modèle par défaut</dt><dd>{{ llm_config.model|default('Non configuré') }}</dd></div><div><dt>Clé API</dt><dd>Masquée</dd></div><div><dt>Limite de tokens</dt><dd>{{ llm_config.token_limit|default('Non configurée') }}</dd></div></dl>
+    {% if permissions.llm_configure|default(false) %}<form class="app-form" method="post" action="/admin/llm">{{ csrf(csrf_token) }}<label for="llm-provider">Fournisseur <input id="llm-provider" name="provider" value="{{ llm_config.provider|default('') }}" required></label><label for="llm-model">Modèle <input id="llm-model" name="model" value="{{ llm_config.model|default('') }}" required></label><button type="submit">Enregistrer la configuration</button></form>{% endif %}
+  </section>
+  <section class="app-panel" aria-labelledby="admin-errors-title"><h2 id="admin-errors-title">Erreurs techniques récentes</h2>
+    {% if technical_events|default([]) %}<ul class="app-list">{% for event in technical_events %}<li><strong>{{ event.code }}</strong> <span class="app-meta">{{ event.created_at }} · {{ event.reference }}</span><p>{{ event.summary }}</p></li>{% endfor %}</ul>{% else %}{{ empty('Aucune erreur technique visible.') }}{% endif %}
+    <p class="app-meta">Les prompts complets, documents et secrets ne figurent pas dans ce journal.</p>
+  </section>
+</div>
+{% endblock %}

@@ -1,0 +1,6 @@
+# Socle V1 : identité, LLM, broker Redis et stockage S3 privé.
+-r requirements-llm.txt
+celery>=5.4,<6.0
+redis>=5.0,<7.0
+boto3>=1.35,<2.0
+-r requirements-ingestion.txt

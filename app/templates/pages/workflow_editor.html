@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% from "partials/ui.html" import status, empty, csrf %}
+{% set active_page = 'workflow' %}
+{% block title %}Concepteur de flux · {{ project.name }}{% endblock %}
+{% block content %}
+<div class="app-page-head"><div><a class="app-meta" href="/projects/{{ project.id }}/workflows">← Flux</a><h1>Concepteur de flux</h1><p>Catalogue fermé, connexions typées et validation humaine avant toute publication.</p></div>{{ status(flow.status) }}</div>
+<div class="app-grid">
+  <section class="app-panel" aria-labelledby="catalog-title"><h2 id="catalog-title">Catalogue de nœuds</h2>
+    <p class="app-meta">Seuls les types autorisés par l’API peuvent rejoindre le graphe.</p>
+    {% if node_catalog|default([]) %}<ul class="app-list">{% for kind in node_catalog %}<li><strong>{{ kind.label }}</strong> <span class="app-meta">{{ kind.description }}</span></li>{% endfor %}</ul>{% else %}{{ empty('Catalogue indisponible.') }}{% endif %}
+  </section>
+  <section class="app-panel" aria-labelledby="graph-title"><h2 id="graph-title">Version {{ flow.version_label }}</h2>
+    <p>{{ flow.description|default('') }}</p>
+    {% if flow.nodes|default([]) %}<ol class="app-list">{% for node in flow.nodes %}<li><strong>{{ node.label }}</strong> · {{ node.kind_label }} <span class="app-meta">Responsable : {{ node.owner_role }} · Entrées : {{ node.inputs_label|default('Aucune') }}</span></li>{% endfor %}</ol>
+    {% else %}{{ empty('Ajoutez des nœuds à la nouvelle version du flux.') }}{% endif %}
+  </section>
+</div>
+<section class="app-panel app-section" aria-labelledby="flow-control-title"><h2 id="flow-control-title">Contrôles structurels</h2>
+  {% if validation_errors|default([]) %}<ul class="app-list">{% for problem in validation_errors %}<li>{{ problem }}</li>{% endfor %}</ul>{% else %}<p>Aucune erreur structurelle signalée pour cette version.</p>{% endif %}
+  <p class="app-meta">Le canevas interactif utilisera cette liste accessible comme représentation de repli. Enregistrer une édition crée toujours une nouvelle version ; le serveur revalide le DAG, les ports et les portes humaines.</p>
+  {% if flow.status == 'validated' %}<p>Cette version est immuable. Toute modification devra créer un nouveau brouillon.</p>{% endif %}
+  {% if permissions.flow_edit|default(false) %}<form method="post" action="/projects/{{ project.id }}/workflows/{{ flow.id }}/versions">{{ csrf(csrf_token) }}<input type="hidden" name="parent_version_id" value="{{ flow.version_id }}"><button type="submit">Créer une nouvelle version de travail</button></form>{% endif %}
+</section>
+{% endblock %}

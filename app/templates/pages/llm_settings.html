@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% from "partials/ui.html" import csrf, empty %}
+{% set active_page = 'llm' %}
+{% block title %}Configuration LLM{% endblock %}
+{% block content %}
+<div class="app-page-head"><div><h1>Modèles LLM</h1><p>Profils cloud et locaux utilisés par le client LLM de la plateforme.</p></div><a class="button" href="/admin/llm/new">Ajouter un profil</a></div>
+<section class="app-panel" aria-labelledby="llm-profiles-title"><h2 id="llm-profiles-title">Profils configurés</h2>
+  {% if profiles %}<div class="app-table-wrap"><table class="app-table"><thead><tr><th scope="col">Profil</th><th scope="col">Modèle et adresse</th><th scope="col">État</th><th scope="col">Connexion</th><th scope="col">Actions</th></tr></thead><tbody>
+    {% for item in profiles %}{% set profile = item.profile %}<tr>
+      <td><strong>{{ profile.name }}</strong><div class="app-meta">v{{ profile.version }} · {{ profile.provider|replace('_', ' ') }}{% if item.is_default %} · Par défaut{% endif %}</div></td>
+      <td>{{ profile.model_name }}{% if profile.base_url %}<div class="app-meta">{{ profile.base_url }}</div>{% endif %}<div class="app-meta">{% if profile.credential_env %}Clé : {{ profile.credential_env }} ({% if item.credential_available %}présente{% else %}absente{% endif %}){% else %}Aucune clé requise{% endif %}</div></td>
+      <td>{% if not profile.enabled %}Désactivé{% elif item.ready %}Prêt{% else %}Configuration incomplète{% endif %}</td>
+      <td>{% if item.check_status == 'success' %}Vérifiée{% elif item.check_status == 'failure' %}Échec : {{ item.check_category }}{% else %}Non vérifiée{% endif %}</td>
+      <td><div class="app-llm-actions"><a class="button secondary" href="/admin/llm/{{ profile.profile_id }}/edit">Modifier</a>
+        {% if profile.enabled %}<form method="post" action="/admin/llm/{{ profile.profile_id }}/check">{{ csrf(csrf_token) }}<button type="submit" class="secondary"{% if not item.ready %} disabled{% endif %}>Vérifier</button></form>{% endif %}
+        {% if item.ready and item.check_status == 'success' and not item.is_default %}<form method="post" action="/admin/llm/{{ profile.profile_id }}/default">{{ csrf(csrf_token) }}<button type="submit" class="secondary">Définir par défaut</button></form>{% endif %}
+        {% if profile.enabled %}<form method="post" action="/admin/llm/{{ profile.profile_id }}/disable">{{ csrf(csrf_token) }}<input type="hidden" name="version" value="{{ profile.version }}"><button type="submit" class="secondary">Désactiver</button></form>{% endif %}
+      </div></td>
+    </tr>{% endfor %}
+  </tbody></table></div>{% else %}{{ empty('Aucun profil LLM configuré.') }}{% endif %}
+</section>
+<section class="app-panel app-section" aria-labelledby="llm-ops-title"><h2 id="llm-ops-title">Configuration d'exploitation</h2>
+  <p>Les clés API sont fournies par des variables d'environnement <code>MIMIC_LLM_KEY_…</code>. Leur valeur n'est jamais enregistrée ni affichée. Une vérification envoie uniquement « Réponds uniquement OK. » au fournisseur choisi et peut consommer quelques tokens.</p>
+  <p><strong>Adresses autorisées :</strong> {% if allowed_urls %}{% for url in allowed_urls %}<code>{{ url }}</code>{% if not loop.last %}, {% endif %}{% endfor %}{% else %}aucune. Définissez <code>MIMIC_LLM_ALLOWED_BASE_URLS</code> pour Azure ou un serveur local.{% endif %}</p>
+  <p>Le choix du modèle par défaut exige une vérification réussie de la version courante. Chaque modification crée une nouvelle version et conserve l'historique ; le défaut doit alors être choisi à nouveau après vérification.</p>
+</section>
+{% endblock %}

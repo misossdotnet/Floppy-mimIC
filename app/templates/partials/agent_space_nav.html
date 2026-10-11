@@ -1,0 +1,6 @@
+<nav class="app-actions app-section agent-space-nav" aria-label="Espace Équipe IA">
+  <a class="button secondary" href="/projects/{{ project.id }}/pilotage">Pilotage projet</a>
+  {% for key, label in [('','Équipe'),('memory','Mémoire'),('coordination','Coordination'),('incidents','Incidents'),('code','Dépôts et code'),('runtimes','Runtimes et quotas')] %}
+  <a class="button secondary" href="/projects/{{ project.id }}/agents{% if key %}/{{ key }}{% endif %}"{% if view|default('') == key %} aria-current="page"{% endif %}>{{ label }}</a>
+  {% endfor %}
+</nav>

@@ -1,0 +1,82 @@
+<div class="app-page-head"><div><h1>Pilotage opérationnel</h1><p>{{ project.name }} · Mode liste · État technique distinct de la validation documentaire.</p></div><a class="button secondary" href="/projects/{{ project.id }}/pilotage">Actualiser</a></div>
+<p class="app-meta">Lecture du {{ display_date(pilotage.as_of) }} (Europe/Paris). Les données peuvent évoluer ; ouvrez l’objet métier avant toute décision.</p>
+<section class="app-panel" aria-labelledby="pilotage-filters-title">
+  <h2 id="pilotage-filters-title">Filtrer le pilotage</h2>
+  <form class="app-inline-form pilotage-filters" method="get" action="/projects/{{ project.id }}/pilotage">
+    {% if pilotage.coffy %}<input type="hidden" name="coffy_period" value="{{ pilotage.coffy.filters.period }}"><input type="hidden" name="coffy_status" value="{{ pilotage.coffy.filters.status }}"><input type="hidden" name="coffy_provider" value="{{ pilotage.coffy.filters.provider }}"><input type="hidden" name="coffy_profile" value="{{ pilotage.coffy.filters.profile or '' }}"><input type="hidden" name="coffy_subject" value="{{ pilotage.coffy.filters.subject or '' }}">{% endif %}
+    <label for="pilotage-project">Projet <select id="pilotage-project" name="project">{% for p in projects %}<option value="{{ p.id }}"{% if p.id == project.id %} selected{% endif %}>{{ p.name }}</option>{% endfor %}</select></label>
+    <label for="pilotage-kind">Type <select id="pilotage-kind" name="kind">{% for key, label in kinds.items() %}<option value="{{ key }}"{% if filters.kind == key %} selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>
+    <label for="pilotage-state">État <select id="pilotage-state" name="state"><option value="">Tous</option>{% for value in states %}<option value="{{ value }}"{% if filters.state == value %} selected{% endif %}>{{ value }}</option>{% endfor %}</select></label>
+    <button type="submit">Filtrer</button><a href="/projects/{{ project.id }}/pilotage">Réinitialiser</a>
+  </form>
+</section>
+<section class="app-panel app-section" aria-labelledby="pilotage-summary-title">
+  <h2 id="pilotage-summary-title">Synthèse du projet</h2>
+  <p class="app-meta">Compteurs du projet avant filtres. Les agents actifs sont les couples équipe/compétence ayant une session active. Les messages sont comptés une fois ; les livraisons sont comptées par profil destinataire.</p>
+  <dl class="sprint-metrics">
+  {% for key, label, kind, state in [('active_agents','Agents actifs','sessions','En cours'),('active_sessions','Sessions actives','sessions','En cours'),('expired_sessions','Sessions expirées','sessions','En attente'),('blocked_tasks','Tâches bloquées','tasks',''),('unread_messages','Messages non acquittés','messages',''),('unacknowledged_deliveries','Livraisons non acquittées','messages',''),('worktrees','Worktrees conservés','worktrees',''),('reviews','Revues de code à terminer','reviews',''),('quotas','Quotas cumulatifs configurés','quotas',''),('alerts','Alertes opérationnelles','alerts','')] %}
+    <div><dt>{{ label }}</dt><dd>{% if pilotage.counters[key] is not none %}<a href="{{ request.url.include_query_params(kind=kind,state=state,offset=0) }}">{{ pilotage.counters[key] }}</a>{% else %}Non disponible{% endif %}</dd></div>
+  {% endfor %}
+  </dl>
+  {% if not pilotage.agent_read %}<p>Les activités Équipe IA nécessitent le droit de lecture correspondant.</p>{% endif %}
+</section>
+<section class="app-panel app-section" aria-labelledby="pilotage-budget-title">
+  <h2 id="pilotage-budget-title">Budgets et consommation</h2>
+  {% if pilotage.budget_data %}<p><a href="?kind=budgets">Budgets périodiques : {{ pilotage.counters.budgets }}</a> · <a href="?kind=budget_alerts">Alertes budgétaires non acquittées : {{ pilotage.counters.budget_alerts }}</a> · Suspensions à examiner : {{ pilotage.counters.budget_suspensions }}</p>
+  <p>Périodes calendaires UTC ; charges prudentes distinctes des mesures. <a href="/projects/{{ project.id }}/agents/runtimes#budgets">Consulter les budgets, acquitter ou reprendre</a>.</p>{% else %}<p>Budgets périodiques et alertes budgétaires : Non disponible.</p>{% endif %}
+  {% if pilotage.consumption %}{% set usage = pilotage.consumption %}
+  <dl class="sprint-metrics"><div><dt>Tokens mesurés</dt><dd>{{ usage.tokens if usage.tokens is not none else 'Non disponible' }}</dd></div><div><dt>Durée mesurée (s)</dt><dd>{{ usage.seconds if usage.seconds is not none else 'Non disponible' }}</dd></div><div><dt>Coût LLM estimé</dt><dd>{% if usage.cost is not none and usage.currency %}{{ usage.cost }} {{ usage.currency }}{% else %}Non disponible{% endif %}</dd></div><div><dt>Appels actifs</dt><dd>{{ usage.active }}</dd></div></dl>
+  <p class="app-meta">Registre cumulatif depuis sa mise en service. {{ usage.unmetered }} appel(s) client externe sans mesure de tokens/coût. Une mesure manquante ou plusieurs devises rendent le total concerné indisponible. Les tarifs figés par appel sont consultables depuis le registre.</p>
+  <a href="/projects/{{ project.id }}/agents/runtimes">Consulter les runtimes et quotas cumulatifs</a>
+  {% else %}<p>Consommation : Non disponible.</p>{% endif %}
+</section>
+{% if pilotage.coffy %}{% set coffy = pilotage.coffy %}
+<section class="app-panel app-section" aria-labelledby="pilotage-coffy-title">
+  <h2 id="pilotage-coffy-title">Tâches LLM récurrentes</h2>
+  <p class="app-meta">Runs créés {% if coffy.period_start %}depuis {{ display_date(coffy.period_start) }}{% else %}sur tout l'historique{% endif %} jusqu'à {{ display_date(coffy.period_end) }} (heures Europe/Paris ; fenêtre glissante calculée en UTC). Les filtres ci-dessous s'appliquent aux indicateurs et aux cartes CoFFY.</p>
+  <form class="app-inline-form pilotage-filters" method="get" action="/projects/{{ project.id }}/pilotage">
+    <input type="hidden" name="kind" value="{{ filters.kind }}"><input type="hidden" name="state" value="{{ filters.state }}">
+    <label>Période <select name="coffy_period">{% for value, label in [('7d','7 jours'),('30d','30 jours'),('90d','90 jours'),('all','Tout l’historique')] %}<option value="{{ value }}"{% if coffy.filters.period == value %} selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>
+    <label>Statut du run <select name="coffy_status"><option value="">Tous</option>{% for value in ['pending','queued','running','retrying','success','failed','timeout','cancelled'] %}<option value="{{ value }}"{% if coffy.filters.status == value %} selected{% endif %}>{{ value }}</option>{% endfor %}</select></label>
+    <label>Fournisseur <select name="coffy_provider"><option value="">Tous</option>{% for value in ['openai','azure_openai','anthropic','ollama','openai_compatible'] %}<option value="{{ value }}"{% if coffy.filters.provider == value %} selected{% endif %}>{{ value }}</option>{% endfor %}</select></label>
+    <label>Modèle et profil <select name="coffy_profile"><option value="">Tous</option>{% for item in coffy.profiles %}<option value="{{ item.id }}"{% if coffy.filters.profile == item.id %} selected{% endif %}>{{ item.label }}</option>{% endfor %}</select></label>
+    <label>Sujet <select name="coffy_subject"><option value="">Tous</option>{% for item in coffy.subjects %}<option value="{{ item.id }}"{% if coffy.filters.subject == item.id %} selected{% endif %}>{{ item.title }}</option>{% endfor %}</select></label>
+    <button type="submit">Filtrer CoFFY</button>
+  </form>
+  <dl class="sprint-metrics">
+    <div><dt>Runs</dt><dd>{{ coffy.volume }}</dd></div>
+    <div><dt>Réussites</dt><dd>{{ coffy.statuses.success }}</dd></div>
+    <div><dt>Échecs</dt><dd>{{ coffy.statuses.failed }}</dd></div>
+    <div><dt>Timeouts</dt><dd>{{ coffy.statuses.timeout }}</dd></div>
+    <div><dt>Annulés</dt><dd>{{ coffy.statuses.cancelled }}</dd></div>
+    <div><dt>Occurrences sautées</dt><dd>{{ coffy.skipped.occurrences }}</dd></div>
+    <div><dt>En attente ou en cours</dt><dd>{{ coffy.statuses.pending + coffy.statuses.queued + coffy.statuses.running + coffy.statuses.retrying }}</dd></div>
+    <div><dt>Taux de réussite</dt><dd>{{ coffy.success_rate_percent ~ ' %' if coffy.success_rate_percent is not none else 'Non disponible' }}</dd></div>
+    <div><dt>Durée moyenne</dt><dd>{{ coffy.duration.mean_seconds ~ ' s' if coffy.duration.mean_seconds is not none else 'Non disponible' }}</dd></div>
+  </dl>
+  <p class="app-meta">Taux : {{ coffy.statuses.success }} réussite(s) sur {{ coffy.terminal_count }} run(s) terminaux. Durées mesurées : {{ coffy.duration.count }} run(s) ; minimum {{ coffy.duration.min_seconds ~ ' s' if coffy.duration.min_seconds is not none else 'Non disponible' }}, maximum {{ coffy.duration.max_seconds ~ ' s' if coffy.duration.max_seconds is not none else 'Non disponible' }}. Les runs actifs ne sont pas comptés dans ces dénominateurs. Les occurrences sautées représentent {% if coffy.skipped.count_truncated %}au moins {% endif %}{{ coffy.skipped.coalesced_due }} échéance(s) coalescée(s) ; un filtre de statut de run les exclut.</p>
+  <h3>Erreurs fréquentes</h3>{% if coffy.errors %}<ul>{% for item in coffy.errors %}<li>{{ item.code }} : {{ item.count }}</li>{% endfor %}</ul>{% else %}<p>Aucun code d’erreur pour la sélection.</p>{% endif %}
+  <h3>Ventilation par fournisseur</h3>{% if coffy.by_provider %}<ul>{% for item in coffy.by_provider %}<li>{{ item.provider }} : {{ item.runs }} run(s), {{ item.success }} réussite(s)</li>{% endfor %}</ul>{% else %}<p>Aucun run.</p>{% endif %}
+  <h3>Ventilation par modèle</h3>{% if coffy.by_model %}<ul>{% for item in coffy.by_model %}<li>{{ item.provider }} · {{ item.model }} : {{ item.runs }} run(s), {{ item.success }} réussite(s)</li>{% endfor %}</ul>{% else %}<p>Aucun run.</p>{% endif %}
+  <h3>Avis et satisfaction</h3>
+  <dl class="sprint-metrics"><div><dt>Avis retenus</dt><dd>{{ coffy.satisfaction.feedback_count }}</dd></div><div><dt>Runs évalués</dt><dd>{{ coffy.satisfaction.rated_runs }}</dd></div><div><dt>Note moyenne</dt><dd>{{ coffy.satisfaction.mean_score ~ ' / 5' if coffy.satisfaction.mean_score is not none else 'Non disponible' }}</dd></div><div><dt>Notes 4 ou 5</dt><dd>{{ coffy.satisfaction.positive_rate_percent ~ ' %' if coffy.satisfaction.positive_rate_percent is not none else 'Non disponible' }}</dd></div></dl>
+  <p class="app-meta">Dernier avis par auteur et par run ; moyenne et part positive calculées sur {{ coffy.satisfaction.feedback_count }} avis retenu(s). Un avis ne valide jamais le résultat. Les quotas et coûts restent dans la section Budgets et consommation.</p>
+</section>
+{% elif not pilotage.coffy_read %}<p class="app-meta">Les indicateurs des tâches récurrentes nécessitent le droit de lecture CoFFY du projet.</p>{% endif %}
+<section class="app-panel app-section" aria-labelledby="activities-title">
+  <h2 id="activities-title">Activités</h2>
+  <p role="status" aria-live="polite">{{ pilotage.total }} résultat(s). {% if pilotage.total %}Affichage de {{ pilotage.offset + 1 }} à {{ [pilotage.offset + 20, pilotage.total]|min }}.{% endif %}</p>
+  <p class="app-meta">Les alertes opérationnelles regroupent incidents non résolus, opérations Git incertaines et appels runtime à examiner. Les revues affichées portent sur la dernière collecte d’un worktree conservé. Aucun acquittement, récupération de tâche ou accord n’est déclenché par cette lecture.</p>
+  {% if pilotage.activities %}<ol class="app-list pilotage-list" start="{{ pilotage.offset + 1 }}">
+    {% for item in pilotage.activities %}<li><article aria-labelledby="activity-{{ loop.index }}"><h3 id="activity-{{ loop.index }}"><a href="{{ item.href }}">{{ item.title }}</a></h3>
+      <p class="app-meta">{{ kinds[item.kind] }} · {{ item.id }} · {{ display_date(item.created_at) }}</p>
+      <p>État technique : {{ status(item.state) }} · Statut documentaire : {% if item.document_status %}{{ status(item.document_status) }}{% else %}Sans objet{% endif %}</p>
+      <p>Prochain acteur : {{ item.action_owner }}</p>
+      {% if item.details %}<ul>{% for detail in item.details %}<li>{{ detail }}</li>{% endfor %}</ul>{% endif %}
+    </article></li>{% endfor %}
+  </ol>{% else %}{{ empty('Aucune activité ne correspond aux filtres.') }}{% endif %}
+  <nav class="app-actions app-section" aria-label="Pagination des activités">
+    {% if pilotage.offset > 0 %}<a href="{{ request.url.include_query_params(offset=[pilotage.offset-20,0]|max) }}">Page précédente</a>{% endif %}
+    {% if pilotage.next_offset is not none %}<a href="{{ request.url.include_query_params(offset=pilotage.next_offset) }}">Page suivante</a>{% endif %}
+  </nav>
+</section>

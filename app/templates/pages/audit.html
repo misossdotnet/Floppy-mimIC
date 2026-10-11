@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% from "partials/ui.html" import empty %}
+{% set active_page = 'audit' %}
+{% block title %}Audit · {{ project.name }}{% endblock %}
+{% block content %}
+<div class="app-page-head"><div><h1>Audit du projet</h1><p>Décisions, modifications et traitements liés aux versions et aux acteurs autorisés.</p></div></div>
+<section class="app-panel" aria-labelledby="audit-filter-title"><h2 id="audit-filter-title">Filtres</h2><form class="app-inline-form" method="get" action="/projects/{{ project.id }}/audit">
+  <label for="audit-action">Action <select id="audit-action" name="action"><option value="">Toutes</option>{% for action in audit_actions|default([]) %}<option value="{{ action }}"{% if filters.action|default('') == action %} selected{% endif %}>{{ action }}</option>{% endfor %}</select></label>
+  <label for="audit-actor">Acteur <input id="audit-actor" name="actor" value="{{ filters.actor|default('') }}"></label>
+  <label for="audit-from">Depuis <input id="audit-from" type="date" name="from" value="{{ filters.from_date|default('') }}"></label>
+  <button type="submit">Filtrer</button>
+</form></section>
+<section class="app-panel app-section" aria-labelledby="audit-events-title"><h2 id="audit-events-title">Événements</h2>
+  {% if events|default([]) %}<ol class="app-list">{% for event in events %}<li><strong>{{ event.action }}</strong> <span class="app-meta">{{ event.created_at }} · {{ event.actor_label }}</span><div>{{ event.target_label }}{% if event.before_status or event.after_status %} · {{ event.before_status|default('—') }} → {{ event.after_status|default('—') }}{% endif %}</div><div class="app-meta">{{ event.summary|default('') }}</div></li>{% endfor %}</ol>
+  {% else %}{{ empty('Aucun événement ne correspond aux filtres.') }}{% endif %}
+</section>
+{% endblock %}

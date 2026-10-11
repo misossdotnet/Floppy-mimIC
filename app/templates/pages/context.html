@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% from "partials/ui.html" import status, empty, csrf %}
+{% set active_page = 'context' %}
+{% block title %}Contexte · {{ project.name }}{% endblock %}
+{% block content %}
+<div class="app-page-head"><div><h1>Référentiel de contexte</h1><p>Corrigez les propositions IA avant de les utiliser comme référence projet.</p></div></div>
+<section class="app-panel" aria-labelledby="context-filter-title"><h2 id="context-filter-title">Filtrer</h2>
+  <form class="app-inline-form" method="get" action="/projects/{{ project.id }}/context">
+    <label for="context-type">Type <select id="context-type" name="type"><option value="">Tous</option>{% for value in context_types|default([]) %}<option value="{{ value.code if value is mapping else value }}"{% if filters.type|default('') == (value.code if value is mapping else value) %} selected{% endif %}>{{ value.label if value is mapping else value }}</option>{% endfor %}</select></label>
+    <label for="context-status">Statut <select id="context-status" name="status"><option value="">Tous</option>{% for value in ['Brouillon IA', 'À revoir', 'Validé', 'Rejeté', 'Obsolète'] %}<option value="{{ value }}"{% if filters.status|default('') == value %} selected{% endif %}>{{ value }}</option>{% endfor %}</select></label>
+    <button type="submit">Filtrer</button>
+  </form>
+</section>
+{% if identity_mode|default(false) and permissions.context_edit|default(false) %}<section class="app-panel app-section"><h2>Ajouter un élément manuel</h2><form class="app-form" method="post" action="/projects/{{ project.id }}/context">{{ csrf(csrf_token) }}
+  <label>Type <select name="type" required>{% for value in context_types %}<option value="{{ value.code }}">{{ value.label }}</option>{% endfor %}</select></label>
+  <label>Titre <input name="title" maxlength="180" required></label><label>Contenu <textarea name="content" maxlength="4000" required></textarea></label><button type="submit">Ajouter pour revue</button>
+</form></section>{% endif %}
+<div class="app-grid app-section">
+  <section class="app-panel" aria-labelledby="context-list-title"><h2 id="context-list-title">Éléments</h2>
+    {% if context_items|default([]) %}<ul class="app-list">{% for item in context_items %}<li><a href="/projects/{{ project.id }}/context?item_id={{ item.id }}">{{ item.title }}</a> <span class="app-meta">{{ item.type }} · {{ item.source_name|default('Saisie manuelle') }}</span> {{ status(item.status) }}</li>{% endfor %}</ul>
+    {% else %}{{ empty('Aucun élément ne correspond aux filtres.') }}{% endif %}
+  </section>
+  <section class="app-panel" aria-labelledby="context-detail-title"><h2 id="context-detail-title">Détail</h2>
+    {% if selected_item is defined and selected_item %}
+      <p>{{ status(selected_item.status) }} <span class="app-meta">Version {{ selected_item.version }} · Source : {{ selected_item.source_name|default('Saisie manuelle') }}</span></p>
+      {% if permissions.context_edit|default(false) and selected_item.status != 'Obsolète' %}<form class="app-form" method="post" action="/projects/{{ project.id }}/context/{{ selected_item.id }}/versions">{{ csrf(csrf_token) }}
+        <label for="item-title">Titre <input id="item-title" name="title" value="{{ selected_item.title }}" required></label>
+        <label for="item-content">Contenu <textarea id="item-content" name="content" required>{{ selected_item.content }}</textarea></label>
+        <input type="hidden" name="expected_version" value="{{ selected_item.version }}">
+        <button type="submit">Enregistrer une nouvelle version</button>
+      </form>{% else %}<p>{{ selected_item.content }}</p>{% endif %}
+      <p class="app-meta">Les décisions de validation et de rejet sont prises dans la revue, avec contrôle des droits par l’API.</p>
+      {% if identity_mode|default(false) %}
+      {% if selected_item.source_id %}<p><a href="/projects/{{ project.id }}/sources/{{ selected_item.source_id }}">Voir la source d’origine</a></p>{% endif %}
+      {% if selected_item.status == 'Brouillon IA' and permissions.context_edit|default(false) %}<form method="post" action="/projects/{{ project.id }}/context/{{ selected_item.id }}/decisions">{{ csrf(csrf_token) }}<input type="hidden" name="decision" value="review"><input type="hidden" name="expected_version" value="{{ selected_item.version }}"><button type="submit">Soumettre à la revue</button></form>{% endif %}
+      {% if selected_item.status == 'À revoir' and can_validate %}<div class="app-actions"><form method="post" action="/projects/{{ project.id }}/context/{{ selected_item.id }}/decisions">{{ csrf(csrf_token) }}<input type="hidden" name="decision" value="validate"><input type="hidden" name="expected_version" value="{{ selected_item.version }}"><button type="submit">Valider</button></form><form method="post" action="/projects/{{ project.id }}/context/{{ selected_item.id }}/decisions">{{ csrf(csrf_token) }}<input type="hidden" name="decision" value="reject"><input type="hidden" name="expected_version" value="{{ selected_item.version }}"><label>Motif du rejet <textarea name="reason" maxlength="2000" required></textarea></label><button type="submit">Rejeter</button></form></div>{% endif %}
+      {% if permissions.context_edit|default(false) and selected_item.status != 'Obsolète' %}<form method="post" action="/projects/{{ project.id }}/context/{{ selected_item.id }}/obsolete">{{ csrf(csrf_token) }}<input type="hidden" name="expected_version" value="{{ selected_item.version }}"><button type="submit">Retirer cet élément du référentiel</button></form>{% endif %}
+      {% endif %}
+      <section class="app-section" aria-labelledby="context-relations-title"><h3 id="context-relations-title">Relations</h3>
+        {% if item_relations %}<ul class="app-list">{% for relation in item_relations %}<li>{{ relation.direction }} · {{ relation.type }} · <a href="/projects/{{ project.id }}/context?item_id={{ relation.other.id }}">{{ relation.other.title }}</a> {{ status(relation.other.status) }}{% if permissions.context_edit|default(false) %}<form method="post" action="/projects/{{ project.id }}/context/{{ selected_item.id }}/relations/{{ relation.id }}/remove">{{ csrf(csrf_token) }}<button type="submit">Retirer la relation</button></form>{% endif %}</li>{% endfor %}</ul>{% else %}{{ empty('Aucune relation active.') }}{% endif %}
+        {% if permissions.context_edit|default(false) and selected_item.status != 'Obsolète' and relation_targets %}<form class="app-form" method="post" action="/projects/{{ project.id }}/context/{{ selected_item.id }}/relations">{{ csrf(csrf_token) }}<input type="hidden" name="expected_version" value="{{ selected_item.version }}"><label>Type de relation <select name="type">{% for relation_type in relation_types %}<option value="{{ relation_type.code }}">{{ relation_type.label }}</option>{% endfor %}</select></label><label>Élément cible <select name="target_id">{% for target in relation_targets %}<option value="{{ target.id }}">{{ target.title }} · {{ target.type }}</option>{% endfor %}</select></label><button type="submit">Ajouter la relation</button></form>{% endif %}
+      </section>
+      <section class="app-section" aria-labelledby="context-history-title"><h3 id="context-history-title">Historique</h3><ol class="app-list">{% for version in item_versions %}<li><strong>Version {{ version.version }}</strong> · {{ version.created_at }} · {{ version.actor }} · {{ status(version.status) }}<details><summary>{{ version.title }}</summary><p>{{ version.content }}</p></details></li>{% endfor %}</ol></section>
+      <section class="app-section" aria-labelledby="context-comments-title"><h3 id="context-comments-title">Commentaires de revue</h3>
+        {% if item_comments %}<ul class="app-list">{% for comment in item_comments %}<li><strong>Version {{ comment.version }}</strong> · {{ comment.author }} · {{ comment.created_at }} · {{ 'Résolu' if comment.status == 'resolved' else 'Ouvert' }}<p>{{ comment.body }}</p>{% if can_comment and comment.status == 'open' %}<form method="post" action="/projects/{{ project.id }}/context/{{ selected_item.id }}/comments/{{ comment.id }}/resolve">{{ csrf(csrf_token) }}<button type="submit">Résoudre</button></form>{% endif %}</li>{% endfor %}</ul>{% else %}{{ empty('Aucun commentaire.') }}{% endif %}
+        {% if can_comment %}<form class="app-form" method="post" action="/projects/{{ project.id }}/context/{{ selected_item.id }}/comments">{{ csrf(csrf_token) }}<input type="hidden" name="version" value="{{ selected_item.version }}"><label>Commenter la version {{ selected_item.version }} <textarea name="body" maxlength="2000" required></textarea></label><button type="submit">Ajouter le commentaire</button></form>{% endif %}
+      </section>
+    {% else %}{{ empty('Sélectionnez un élément pour voir son contenu et sa provenance.') }}{% endif %}
+  </section>
+</div>
+{% endblock %}

@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% from "partials/ui.html" import status, empty, csrf %}
+{% set active_page = 'review' %}
+{% block title %}Revue · {{ version.title }}{% endblock %}
+{% block content %}
+<div class="app-page-head"><div><p class="app-meta">{{ version.version_label }} · {{ version.created_at }}</p><h1>{{ version.title }}</h1><p>Source : {{ version.source_label|default('—') }} · Modèle : {{ version.model_label|default('—') }}</p></div>{{ status(version.status) }}</div>
+<div class="app-grid">
+  <section class="app-panel" aria-labelledby="review-content-title"><h2 id="review-content-title">Contenu de la version</h2><div class="app-reading">{{ version.content }}</div>
+    {% if version.parent_version_id %}<p><a href="/projects/{{ project.id }}/reviews/{{ version.parent_version_id }}">Voir la version précédente</a></p>{% endif %}
+    {% if permissions.version_edit|default(false) %}<form class="app-form app-section" method="post" action="/projects/{{ project.id }}/versions/{{ version.id }}/revisions">{{ csrf(csrf_token) }}
+      <label for="edited-content">Créer une version corrigée <textarea id="edited-content" name="content" required>{{ version.content }}</textarea></label>
+      <input type="hidden" name="expected_version" value="{{ version.version_number }}"><button type="submit">Enregistrer une nouvelle version</button>
+    </form>{% endif %}
+  </section>
+  <div class="app-stack">
+    <section class="app-panel" aria-labelledby="review-meta-title"><h2 id="review-meta-title">Provenance</h2><dl class="pilot-facts">
+      <div><dt>Prompt</dt><dd>{{ version.prompt_summary|default('Accès restreint') }}</dd></div><div><dt>Paramètres</dt><dd>{{ version.parameters_summary|default('—') }}</dd></div><div><dt>Contexte</dt><dd>{{ version.context_snapshot_label|default('—') }}</dd></div>
+      {% if version.regeneration_reason %}<div><dt>Motif de régénération</dt><dd>{{ version.regeneration_reason }}</dd></div>{% endif %}
+      {% if version.prompt_adjustment %}<div><dt>Consigne additionnelle</dt><dd>{{ version.prompt_adjustment }}</dd></div>{% endif %}
+      <div><dt>Coût estimé</dt><dd>{{ version.cost_label|default('Non disponible') }}</dd></div>
+      {% if version.generation_run_id %}<div><dt>Appels LLM</dt><dd><a href="/api/projects/{{ project.id }}/llm-runs/generation/{{ version.generation_run_id }}">Consulter la provenance détaillée</a></dd></div>{% endif %}
+    </dl>{% if versions_enabled|default(true) %}<a class="button secondary" href="/projects/{{ project.id }}/versions">Comparer les versions</a>{% endif %}</section>
+    <section class="app-panel" aria-labelledby="comments-title"><h2 id="comments-title">Commentaires</h2>
+      {% if comments|default([]) %}<ol class="app-list">{% for comment in comments %}<li><strong>{{ comment.author_name }}</strong> <span class="app-meta">{{ comment.created_at }} · {{ 'Résolu' if comment.status == 'resolved' else 'Ouvert' }}</span><p>{{ comment.text }}</p>{% if comment.status == 'open' and permissions.comment_resolve|default(false) %}<form method="post" action="/projects/{{ project.id }}/reviews/{{ version.id }}/comments/{{ comment.id }}/resolve">{{ csrf(csrf_token) }}<button type="submit">Résoudre</button></form>{% endif %}</li>{% endfor %}</ol>{% else %}{{ empty('Aucun commentaire pour cette version.') }}{% endif %}
+      {% if permissions.comment_create|default(false) %}<form class="app-form" method="post" action="/projects/{{ project.id }}/reviews/{{ version.id }}/comments">{{ csrf(csrf_token) }}<label for="comment-text">Ajouter un commentaire <textarea id="comment-text" name="text" required maxlength="5000"></textarea></label><button type="submit">Commenter</button></form>{% endif %}
+    </section>
+  </div>
+</div>
+<section class="app-panel app-section" aria-labelledby="decision-title"><h2 id="decision-title">Décision humaine</h2><p>Les droits et transitions sont revérifiés par l’API lors de chaque action.</p><div class="app-inline-actions">
+  {% if permissions.review_submit|default(false) and version.status == 'Brouillon IA' %}<form method="post" action="/projects/{{ project.id }}/reviews/{{ version.id }}/decision/submit">{{ csrf(csrf_token) }}<button type="submit">Soumettre à revue</button></form>{% endif %}
+  {% if permissions.review_validate|default(false) and version.status == 'À revoir' %}<form method="post" action="/projects/{{ project.id }}/reviews/{{ version.id }}/decision/validate">{{ csrf(csrf_token) }}<button type="submit">Valider cette version</button></form>{% endif %}
+  {% if permissions.review_reject|default(false) and version.status == 'À revoir' %}<form class="app-inline-form" method="post" action="/projects/{{ project.id }}/reviews/{{ version.id }}/decision/reject">{{ csrf(csrf_token) }}<label for="reject-reason">Motif du rejet <input id="reject-reason" name="reason" required maxlength="2000"></label><button type="submit">Rejeter</button></form>{% endif %}
+  {% if version.status == 'Validé' %}<a class="button secondary" href="/projects/{{ project.id }}/publications">Voir les publications</a>{% endif %}
+</div></section>
+{% if permissions.regenerate|default(false) %}<section class="app-panel app-section" aria-labelledby="regenerate-title"><h2 id="regenerate-title">Régénérer depuis cette version</h2><p>La nouvelle sortie IA sera un brouillon lié à cette version. Corrigez le contexte ou ajoutez une consigne ; une décision humaine sera de nouveau nécessaire.</p>
+  <form class="app-form" method="post" action="/projects/{{ project.id }}/versions/{{ version.id }}/regenerations">{{ csrf(csrf_token) }}<input type="hidden" name="expected_version" value="{{ version.version_number }}">
+    <label for="regeneration-reason">Motif de la régénération <textarea id="regeneration-reason" name="reason" required maxlength="2000"></textarea></label>
+    <label for="prompt-adjustment">Consigne de rédaction additionnelle <textarea id="prompt-adjustment" name="prompt_adjustment" maxlength="2000"></textarea></label>
+    <fieldset><legend>Contexte courant à utiliser</legend>{% for item in regeneration_context|default([]) %}<label><input type="checkbox" name="context_ids" value="{{ item.id }}"{% if item.selected %} checked{% endif %}> {{ item.title }} · v{{ item.version }} · {{ item.status }}</label>{% else %}<p>Aucun contexte disponible.</p>{% endfor %}</fieldset>
+    {% if not regeneration_profile_available|default(false) %}<p class="app-alert app-alert-error" role="status">Aucun profil LLM par défaut disponible.</p>{% endif %}
+    <button type="submit"{% if not regeneration_profile_available|default(false) or not regeneration_context|default([]) %} disabled{% endif %}>Lancer la régénération</button>
+  </form>
+</section>{% endif %}
+{% endblock %}

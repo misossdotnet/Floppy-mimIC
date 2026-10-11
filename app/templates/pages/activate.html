@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% from "partials/ui.html" import csrf %}
+{% block title %}Activation du compte{% endblock %}
+{% block breadcrumb %}Activation{% endblock %}
+{% block content %}
+<section class="app-panel app-auth-panel" aria-labelledby="activate-title">
+  <h1 id="activate-title">Activer votre compte</h1>
+  <p>Saisissez l'adresse invitée et le code transmis par l'administrateur. Le code expire après 48 heures.</p>
+  <form class="app-form" method="post" action="/activate">{{ csrf(csrf_token) }}
+    <label for="email">Adresse e-mail <input id="email" name="email" type="email" autocomplete="username" required></label>
+    <label for="code">Code d'invitation <input id="code" name="code" type="text" autocomplete="off" required></label>
+    <label for="password">Nouveau mot de passe <input id="password" name="password" type="password" autocomplete="new-password" minlength="12" maxlength="128" required></label>
+    <button type="submit">Activer le compte</button>
+  </form>
+  <p class="app-section"><a href="/login">Retour à la connexion</a></p>
+</section>
+{% endblock %}

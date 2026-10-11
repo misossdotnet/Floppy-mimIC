@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% from "partials/ui.html" import status, empty, csrf %}
+{% set active_page = 'workflow' %}
+{% block title %}Flux · {{ project.name }}{% endblock %}
+{% block content %}
+<div class="app-page-head"><div><h1>Flux de cadrage</h1><p>Graphes typés, versions validées et portes de décision humaine.</p></div>{% if selected_flow is defined and selected_flow %}<a class="button secondary" href="/projects/{{ project.id }}/workflows/{{ selected_flow.id }}/edit">Ouvrir le concepteur</a>{% endif %}</div>
+<div class="app-grid">
+  <section class="app-panel" aria-labelledby="flows-title"><h2 id="flows-title">Définitions</h2>
+    {% if workflows|default([]) %}<ul class="app-list">{% for flow in workflows %}<li><a href="/projects/{{ project.id }}/workflows?flow_id={{ flow.id }}"><strong>{{ flow.name }}</strong></a> <span class="app-meta">{{ flow.latest_version_label|default('Sans version') }}</span></li>{% endfor %}</ul>{% else %}{{ empty('Aucun flux défini pour ce projet.') }}{% endif %}
+  </section>
+  <section class="app-panel" aria-labelledby="flow-detail-title"><h2 id="flow-detail-title">Version sélectionnée</h2>
+    {% if selected_flow is defined and selected_flow %}<h3>{{ selected_flow.name }}</h3><p>{{ status(selected_flow.status) }} · {{ selected_flow.version_label }}</p>
+      <p>{{ selected_flow.description|default('') }}</p>
+      {% if selected_flow.status == 'validated' and permissions.flow_execute|default(false) %}<form method="post" action="/projects/{{ project.id }}/workflows/{{ selected_flow.id }}/runs">{{ csrf(csrf_token) }}<input type="hidden" name="version_id" value="{{ selected_flow.version_id }}"><button type="submit">Lancer cette version</button></form>{% endif %}
+      {% if selected_flow.run_id %}<p><a href="/projects/{{ project.id }}/agents?run_id={{ selected_flow.run_id }}">Voir l’équipe IA du run</a></p>{% endif %}
+    {% else %}{{ empty('Sélectionnez un flux pour inspecter sa version.') }}{% endif %}
+  </section>
+</div>
+{% if selected_flow is defined and selected_flow %}
+<section class="app-panel app-section" aria-labelledby="nodes-title"><h2 id="nodes-title">Nœuds et dépendances</h2><p class="app-meta">Le catalogue inclut le nœud Équipe IA. Toute publication exige une porte humaine en amont.</p>
+  {% if selected_flow.nodes|default([]) %}<div class="app-table-wrap"><table class="app-table"><thead><tr><th scope="col">Étape</th><th scope="col">Type</th><th scope="col">Responsable</th><th scope="col">Entrées attendues</th></tr></thead><tbody>
+    {% for node in selected_flow.nodes %}<tr><td>{{ node.label }}</td><td>{{ node.kind_label }}</td><td>{{ node.owner_role }}</td><td>{{ node.inputs_label|default('Aucune') }}</td></tr>{% endfor %}
+  </tbody></table></div>{% else %}{{ empty('Cette version ne contient aucun nœud.') }}{% endif %}
+</section>
+{% endif %}
+{% endblock %}

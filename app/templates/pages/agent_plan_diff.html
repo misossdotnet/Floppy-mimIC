@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% from "partials/ui.html" import status, empty %}
+{% set active_page = 'agents' %}
+{% block title %}Comparer les plans IA{% endblock %}
+{% block content %}
+<div class="app-page-head"><div><a class="app-meta" href="/projects/{{ project.id }}/agents?run_id={{ run.id }}">← Équipe IA</a><h1>Comparer les plans</h1><p>Les tâches terminées et leurs sorties restent liées à leur version d’origine.</p></div></div>
+<div class="app-grid"><section class="app-panel"><h2>Plan précédent · v{{ previous_plan.version }}</h2><p>{{ status(previous_plan.status) }}</p><p>{{ previous_plan.summary }}</p></section>
+  <section class="app-panel"><h2>Plan proposé · v{{ current_plan.version }}</h2><p>{{ status(current_plan.status) }}</p><p>{{ current_plan.summary }}</p></section></div>
+<section class="app-panel app-section" aria-labelledby="plan-changes-title"><h2 id="plan-changes-title">Changements</h2>
+  {% if changes|default([]) %}<ul class="app-list">{% for change in changes %}<li><strong>{{ change.kind }}</strong> : {{ change.description }}</li>{% endfor %}</ul>{% else %}{{ empty('Aucune différence détectée.') }}{% endif %}
+</section>
+{% endblock %}

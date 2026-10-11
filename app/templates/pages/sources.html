@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% from "partials/ui.html" import status, empty, csrf %}
+{% set active_page = 'sources' %}
+{% block title %}Sources · {{ project.name }}{% endblock %}
+{% block content %}
+<div class="app-page-head"><div><h1>Sources</h1><p>Documents et besoins utilisés pour établir le contexte du projet.</p></div></div>
+<div class="app-grid">
+  <section class="app-panel" aria-labelledby="upload-title"><h2 id="upload-title">Importer un document</h2>
+    <form class="app-form" method="post" action="/projects/{{ project.id }}/sources" enctype="multipart/form-data">{{ csrf(csrf_token) }}
+      <label for="source-file">Fichier <input id="source-file" type="file" name="file" accept=".pdf,.docx,.md,.html,.xlsx" required></label>
+      <p class="app-meta">PDF, DOCX, Markdown, HTML ou XLSX. Taille maximale : {{ max_upload_size|default('limite définie par le serveur') }}. Le serveur contrôle aussi le contenu.</p>
+      <button type="submit"{% if not permissions.source_upload|default(false) %} disabled{% endif %}>Importer</button>
+    </form>
+  </section>
+  <section class="app-panel" aria-labelledby="need-title"><h2 id="need-title">Saisir un besoin</h2>
+    <form class="app-form" method="post" action="/projects/{{ project.id }}/needs">{{ csrf(csrf_token) }}
+      <label for="need-text">Description du besoin <textarea id="need-text" name="text" required maxlength="20000"></textarea></label>
+      <button type="submit"{% if not permissions.source_upload|default(false) %} disabled{% endif %}>Enregistrer le besoin</button>
+    </form>
+  </section>
+</div>
+<section class="app-panel app-section" aria-labelledby="sources-list-title"><h2 id="sources-list-title">Documents et besoins</h2>
+  {% if sources|default([]) %}<div class="app-table-wrap"><table class="app-table"><thead><tr><th scope="col">Source</th><th scope="col">Type</th><th scope="col">Traitement</th><th scope="col">Ajout</th></tr></thead><tbody>
+    {% for source in sources %}<tr><td><a href="/projects/{{ project.id }}/sources/{{ source.id }}">{{ source.name }}</a></td><td>{{ source.kind }}</td><td>{{ status(source.processing_status) }}</td><td>{{ source.created_at }}</td></tr>{% endfor %}
+  </tbody></table></div>{% else %}{{ empty('Aucune source. Importez un document ou saisissez un besoin.') }}{% endif %}
+</section>
+{% endblock %}

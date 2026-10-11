@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% from "partials/ui.html" import csrf %}
+{% set active_page = 'llm' %}
+{% block title %}{% if profile_id %}Modifier le profil LLM{% else %}Ajouter un profil LLM{% endif %}{% endblock %}
+{% block content %}
+<div class="app-page-head"><div><h1>{% if profile_id %}Modifier le profil LLM{% else %}Ajouter un profil LLM{% endif %}</h1><p>Le modèle et les limites sont enregistrés par version. Les secrets restent dans l'environnement du serveur.</p></div></div>
+<section class="app-panel" aria-labelledby="llm-form-title"><h2 id="llm-form-title">Paramètres du profil</h2>
+  <form class="app-form" method="post" action="{% if profile_id %}/admin/llm/{{ profile_id }}{% else %}/admin/llm{% endif %}">{{ csrf(csrf_token) }}{% if profile_id %}<input type="hidden" name="version" value="{{ form.version }}">{% endif %}
+    <label for="llm-name">Nom du profil <input id="llm-name" name="name" maxlength="120" required value="{{ form.name|default('') }}"></label>
+    <label for="llm-provider">Fournisseur <select id="llm-provider" name="provider" required>{% for code, label in providers.items() %}<option value="{{ code }}"{% if form.provider == code %} selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>
+    <label for="llm-model">Identifiant du modèle ou du déploiement <input id="llm-model" name="model_name" maxlength="160" required value="{{ form.model_name|default('') }}"></label>
+    <p class="app-meta">Saisissez le nom sans préfixe de fournisseur. Pour Azure, utilisez le nom du déploiement ; pour Ollama, le modèle installé.</p>
+    <label for="llm-base">Adresse de base <select id="llm-base" name="base_url"><option value="">Adresse officielle du fournisseur</option>{% for url in allowed_urls %}<option value="{{ url }}"{% if form.base_url == url %} selected{% endif %}>{{ url }}</option>{% endfor %}</select></label>
+    <p class="app-meta">Obligatoire pour Azure, Ollama et une API compatible OpenAI. L'exploitant ajoute les adresses exactes dans <code>MIMIC_LLM_ALLOWED_BASE_URLS</code>.</p>
+    <label for="llm-version">Version d'API Azure <input id="llm-version" name="api_version" maxlength="64" value="{{ form.api_version|default('') }}"></label>
+    <label for="llm-secret">Nom de la variable contenant la clé <input id="llm-secret" name="credential_env" maxlength="100" pattern="MIMIC_LLM_KEY_[A-Z][A-Z0-9_]*" value="{{ form.credential_env|default('') }}"></label>
+    <p class="app-meta">Requis pour les fournisseurs cloud. Ne saisissez jamais la valeur de la clé dans ce formulaire.</p>
+    <div class="app-grid">
+      <label for="llm-output">Tokens de sortie maximum <input id="llm-output" name="max_output_tokens" type="number" min="1" max="32768" required value="{{ form.max_output_tokens }}"></label>
+      <label for="llm-temp">Température optionnelle <input id="llm-temp" name="temperature" type="number" min="0" max="2" step="0.01" value="{{ form.temperature if form.temperature is not none else '' }}"></label>
+      <label for="llm-timeout">Timeout en secondes <input id="llm-timeout" name="timeout_seconds" type="number" min="1" max="300" required value="{{ form.timeout_seconds }}"></label>
+      <label for="llm-retries">Nouvelles tentatives maximum <input id="llm-retries" name="max_retries" type="number" min="0" max="3" required value="{{ form.max_retries }}"></label>
+    </div>
+    <label class="app-checkbox" for="llm-enabled"><input id="llm-enabled" name="enabled" type="checkbox" value="true"{% if form.enabled|default(true) %} checked{% endif %}> Profil actif</label>
+    <div class="app-actions"><button type="submit">{% if profile_id %}Créer une nouvelle version{% else %}Créer le profil{% endif %}</button><a class="button secondary" href="/admin/llm">Annuler</a></div>
+  </form>
+</section>
+{% if versions %}<section class="app-panel app-section" aria-labelledby="llm-history-title"><h2 id="llm-history-title">Historique des versions</h2><div class="app-table-wrap"><table class="app-table"><thead><tr><th>Version</th><th>Fournisseur</th><th>Modèle</th><th>Créée le</th></tr></thead><tbody>{% for item in versions %}<tr><td>v{{ item.version }}{% if item.is_current %} · Courante{% endif %}</td><td>{{ item.provider }}</td><td>{{ item.model_name }}</td><td>{{ item.created_at.strftime('%d/%m/%Y %H:%M') }}</td></tr>{% endfor %}</tbody></table></div></section>{% endif %}
+{% endblock %}

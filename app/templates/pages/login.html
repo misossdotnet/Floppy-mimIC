@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% from "partials/ui.html" import csrf %}
+{% block title %}Connexion{% endblock %}
+{% block breadcrumb %}Connexion{% endblock %}
+{% block content %}
+<section class="app-panel app-auth-panel" aria-labelledby="login-title">
+  <h1 id="login-title">Connexion</h1>
+  <p>Accédez aux projets qui vous ont été attribués.</p>
+  <form class="app-form" method="post" action="/login">{{ csrf(csrf_token) }}
+    <label for="email">Adresse e-mail <input id="email" name="email" type="email" autocomplete="username" required></label>
+    <label for="password">Mot de passe <input id="password" name="password" type="password" autocomplete="current-password" required></label>
+    <button type="submit">Se connecter</button>
+  </form>
+  <p class="app-section">Vous avez reçu un code d'invitation ? <a href="/activate">Activer votre compte</a>.</p>
+</section>
+{% endblock %}

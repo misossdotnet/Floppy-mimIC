@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% from "partials/ui.html" import empty, csrf %}
+{% set active_page = 'members' %}
+{% block title %}Membres · {{ project.name }}{% endblock %}
+{% block content %}
+<div class="app-page-head"><div><h1>Membres et permissions</h1><p>Les rôles humains gouvernent les validations, les flux et les plans agentiques.</p></div></div>
+<section class="app-panel" aria-labelledby="members-title"><h2 id="members-title">Membres du projet</h2>
+  {% if members|default([]) %}<div class="app-table-wrap"><table class="app-table"><thead><tr><th scope="col">Utilisateur</th><th scope="col">Rôle</th><th scope="col">Statut</th><th scope="col">Dernière activité</th></tr></thead><tbody>
+    {% for member in members %}<tr><td>{{ member.display_name }}{% if member.email is defined %}<div class="app-meta">{{ member.email }}</div>{% endif %}</td><td>{{ member.role }}</td><td>{{ member.status }}</td><td>{{ member.last_activity|default('—') }}{% if identity_mode|default(false) and permissions.member_manage|default(false) and member.id != project.owner_id %}<form method="post" action="/projects/{{ project.id }}/members/{{ member.id }}/revoke" class="app-section">{{ csrf(csrf_token) }}<button type="submit" class="secondary">Retirer</button></form>{% endif %}</td></tr>{% endfor %}
+  </tbody></table></div>{% else %}{{ empty('Aucun membre visible.') }}{% endif %}
+</section>
+{% if permissions.member_manage|default(false) %}<section class="app-panel app-section" aria-labelledby="member-add-title"><h2 id="member-add-title">Ajouter un membre</h2><p>Le compte doit d'abord être créé dans <a href="/admin/users">l'administration</a>. Un compte invité peut être affecté avant son activation.</p>
+  <form class="app-inline-form" method="post" action="/projects/{{ project.id }}/members">{{ csrf(csrf_token) }}<label for="member-email">Adresse e-mail <input id="member-email" name="email" type="email" required></label><label for="member-role">Rôle <select id="member-role" name="role" required>{% for role in assignable_roles|default([]) %}<option value="{{ role.code }}">{{ role.label }}</option>{% endfor %}</select></label><button type="submit">Ajouter</button></form>
+</section>{% endif %}
+{% if identity_mode|default(false) and permissions.member_manage|default(false) %}
+<section class="app-panel app-section" aria-labelledby="owner-title"><h2 id="owner-title">Responsable du projet</h2>
+  <p>Le responsable reste membre actif. Transférez cette responsabilité avant de retirer ou désactiver son compte.</p>
+  <form class="app-inline-form" method="post" action="/projects/{{ project.id }}/owner">{{ csrf(csrf_token) }}
+    <label for="owner-target">Nouveau responsable <select id="owner-target" name="target_id" required><option value="">Choisir un membre actif</option>{% for member in members if member.status == 'Actif' and member.id != project.owner_id %}<option value="{{ member.id }}">{{ member.display_name }}</option>{% endfor %}</select></label>
+    <button type="submit">Transférer</button>
+  </form>
+</section>{% endif %}
+<section class="app-panel app-section" aria-labelledby="rbac-title"><h2 id="rbac-title">Règles de validation</h2><p>Product Owner : besoins et parcours. Chef de Projet : plans et dépendances. Architecte Applicatif : architecture, données et sécurité. Les profils IA ne détiennent aucun droit de validation humaine.</p></section>
+{% endblock %}

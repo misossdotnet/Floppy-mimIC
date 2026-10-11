@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% from "partials/ui.html" import status, empty %}
+{% set active_page = 'review' %}
+{% block title %}Revues · {{ project.name }}{% endblock %}
+{% block content %}
+<div class="app-page-head"><div><h1>Revues</h1><p>Versions en attente d’une décision humaine.</p></div></div>
+<section class="app-panel" aria-labelledby="reviews-list-title"><h2 id="reviews-list-title">À examiner</h2>
+  {% if review_items|default([]) %}<div class="app-table-wrap"><table class="app-table"><thead><tr><th scope="col">Livrable</th><th scope="col">Version</th><th scope="col">Statut</th><th scope="col">Rôle attendu</th></tr></thead><tbody>
+    {% for item in review_items %}<tr><td><a href="/projects/{{ project.id }}/reviews/{{ item.version_id }}">{{ item.title }}</a></td><td>{{ item.version_label }}</td><td>{{ status(item.status) }}</td><td>{{ item.expected_role }}</td></tr>{% endfor %}
+  </tbody></table></div>{% else %}{{ empty('Aucune décision humaine en attente.') }}{% endif %}
+</section>
+{% endblock %}

@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% from "partials/ui.html" import status, empty %}
+{% set active_page = 'agents' %}
+{% block title %}Équipe IA · {{ project.name }}{% endblock %}
+{% block content %}
+<div class="app-page-head"><div><h1>Équipe IA</h1><p>{{ project.name }} · Connaissances, coordination et suivi des incidents.</p></div><a class="button secondary" href="/projects/{{ project.id }}/agent-sprints">Sprints</a></div>
+{% include "partials/agent_space_nav.html" %}
+<section class="app-panel app-section"><h2>Équipes du projet</h2>{% if teams %}<ul class="app-list">{% for t in teams %}<li>{{ t.name }} · {% if t.is_active %}Active{% else %}Inactive{% endif %}</li>{% endfor %}</ul>{% else %}{{ empty('Aucune équipe configurée pour ce projet.') }}{% endif %}</section>
+<section class="app-panel app-section"><h2>Plans récents</h2><p>Le suivi ne donne aucun droit d’exécution ni validation documentaire.</p>{% if plans %}<ul class="app-list">{% for p in plans %}<li>Plan {{ p.id }} · {{ status(p.status) }}<p>{{ p.summary }}</p><a href="/api/projects/{{ project.id }}/agent-tasks?plan_id={{ p.id }}">Consulter les tâches via l’API</a></li>{% endfor %}</ul>{% else %}{{ empty('Aucun plan proposé pour ce projet.') }}{% endif %}</section>
+{% endblock %}
